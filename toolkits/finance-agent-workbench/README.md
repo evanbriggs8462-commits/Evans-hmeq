@@ -14,6 +14,7 @@ The central design decision is simple: the model may plan, invoke approved wrapp
 - `src/runwatch/` — elapsed-time heartbeats and atomic, sanitized liveness status for bounded child commands.
 - `tests/` — regression tests for truncation, namespaces, source mutation, unsafe paths, and other known failure modes.
 - `docs/` — deeper runbooks that are loaded only when relevant.
+- [Roadmap](docs/roadmap.md) — implemented capabilities, contracted workflows, remaining adapters, and promotion gates.
 
 The mandatory incident-driven guide for large remote exports is
 [Large XML over SMB: mandatory operating runbook](.opencode/skills/finance-data-reliability/references/large-xml-smb-runbook.md).
