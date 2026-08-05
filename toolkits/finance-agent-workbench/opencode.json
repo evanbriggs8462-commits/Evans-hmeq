@@ -1,0 +1,55 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "azure/gpt-5.3-codex",
+  "share": "disabled",
+  "subagent_depth": 1,
+  "permission": {
+    "skill": {
+      "*": "ask",
+      "finance-data-reliability": "allow"
+    },
+    "external_directory": "ask"
+  },
+  "agent": {
+    "finance-build": {
+      "description": "Implement and validate routine PowerShell, Python, Databricks, and Power BI finance workflows",
+      "mode": "primary",
+      "model": "azure/gpt-5.3-codex",
+      "reasoningEffort": "medium",
+      "textVerbosity": "low",
+      "permission": {
+        "edit": "ask",
+        "external_directory": "ask",
+        "bash": {
+          "*": "ask"
+        }
+      }
+    },
+    "finance-deep": {
+      "description": "Investigate difficult schema drift, reconciliation mismatches, metadata boundaries, and cross-system failures",
+      "mode": "primary",
+      "model": "azure/gpt-5.3-codex",
+      "reasoningEffort": "high",
+      "textVerbosity": "low",
+      "permission": {
+        "edit": "ask",
+        "external_directory": "ask",
+        "bash": {
+          "*": "ask"
+        }
+      }
+    }
+  },
+  "command": {
+    "validate": {
+      "description": "Run the repository checks and summarize evidence",
+      "agent": "finance-build",
+      "template": "Load the finance-data-reliability skill. Run the smallest relevant tests, then the full available suite. Report commands, exit codes, receipts, failures, and anything that was not validated. Do not claim success from inspection alone."
+    },
+    "diagnose-run": {
+      "description": "Classify a failed spool or reconciliation run",
+      "agent": "finance-deep",
+      "template": "Load the finance-data-reliability skill and its failure taxonomy. Diagnose $ARGUMENTS from receipts and sanitized logs. Separate evidence from inference, classify retryability, and propose the smallest safe next action. Do not modify source data or production systems."
+    }
+  }
+}
