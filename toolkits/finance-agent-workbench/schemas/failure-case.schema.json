@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/finance-agent-workbench/failure-case.schema.json",
+  "title": "Sanitized finance agent failure case",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "case_id",
+    "implementation_status",
+    "workflow_type",
+    "stage",
+    "sanitized_symptom",
+    "error_class",
+    "violated_invariant",
+    "discriminating_evidence",
+    "minimal_fixture",
+    "expected_deterministic_result",
+    "remediation",
+    "regression_test_id",
+    "runtime_fingerprint",
+    "evaluation",
+    "classification"
+  ],
+  "properties": {
+    "version": {"const": 1},
+    "case_id": {"type": "string", "minLength": 1},
+    "implementation_status": {"enum": ["proposed", "implemented"]},
+    "workflow_type": {"type": "string", "minLength": 1},
+    "stage": {"type": "string", "minLength": 1},
+    "sanitized_symptom": {"type": "string", "minLength": 1},
+    "error_class": {"type": "string", "minLength": 1},
+    "violated_invariant": {"type": "string", "minLength": 1},
+    "discriminating_evidence": {"type": "array", "items": {"type": "string"}},
+    "minimal_fixture": {"type": "string", "minLength": 1},
+    "expected_deterministic_result": {"type": "string", "minLength": 1},
+    "remediation": {"type": "array", "items": {"type": "string"}},
+    "regression_test_id": {"type": "string", "minLength": 1},
+    "runtime_fingerprint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["model_alias", "reasoning_profile", "tool_versions"],
+      "properties": {
+        "model_alias": {"type": "string"},
+        "reasoning_profile": {"type": "string"},
+        "tool_versions": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "evaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["correctness", "policy_violations", "tool_calls", "elapsed_seconds", "estimated_cost_class"],
+      "properties": {
+        "correctness": {"enum": ["passed", "failed", "inconclusive", "not-run"]},
+        "policy_violations": {"type": "array", "items": {"type": "string"}},
+        "tool_calls": {"type": "integer", "minimum": 0},
+        "elapsed_seconds": {"type": "number", "minimum": 0},
+        "estimated_cost_class": {"type": "string"}
+      }
+    },
+    "classification": {"const": "PUBLIC_SAFE_SYNTHETIC"}
+  }
+}

@@ -16,25 +16,32 @@ agent commands are contracts rather than executable integrations.
 
 | Capability | Current state | Remaining gap |
 |---|---|---|
+| Local-model context and finance migration guidance | Guidance/contract layer implemented as a routed context catalog, public work context, ignored private overlay template, migration playbook, thin workflow skills/commands, policies, and schemas | Add deterministic brief/handoff builders, redaction, cache, and task-family eval execution |
 | Large-file reliability and `runwatch` | Implemented with deterministic code and tests | Validate on the intended Windows, VPN, and SMB environment |
 | Power BI capability discovery | Read-only `/pbi-capabilities` contract and runbook | Approved private adapter and live read-only validation |
 | Databricks capability discovery | Bounded `/dbx-capabilities` contract and runbook | Approved private adapter, cache, and cross-platform task brief |
 | Genie investigation | Bounded `/dbx-genie-probe` contract and safety rules | Executable client, private evidence package, and reconciliation integration |
 | PBIR report authoring | Detailed candidate/deployment runbook | Deterministic inventory, placement, clone, binding, and validation utilities |
-| Failure learning | Failure taxonomy, fixture pattern, and maintenance rule | Structured capture command, corpus, graders, and model-routing evidence |
-| Receipts and liveness state | Tool-specific receipts and atomic `runwatch` state | Shared evidence schemas and a resumable cross-tool run ledger |
-| Semantic contracts | Not started | Machine-checkable metrics, hierarchy, FX, sign, null, and grain rules |
-| Workload profiling | Not started | Power BI refresh plus Databricks queue/runtime correlation |
+| Failure learning | Taxonomy plus proposed-case skill/command, schema, and synthetic example | Deterministic sanitizer/capture runner, implemented fixtures/tests, corpus, graders, and routing evidence |
+| Receipts and liveness state | Tool-specific receipts, atomic `runwatch` state, and a validated handoff contract/example | Executable append-only cross-tool ledger and resume validator |
+| Semantic contracts | Contract schema/example plus resolution skill/command and finance reference | Deterministic validator/linter, approved private contracts, metric-view generation, and regression fixtures |
+| Workload profiling | Read-only guidance and prompt command contract | Approved Power BI/Databricks telemetry adapters and correlation runtime |
 | Migration impact analysis | Not started | PBIR/TMDL/M dependencies joined to bounded Unity Catalog lineage |
 | Databricks ADBC readiness | Documented externally, not checked here | Mixed ADBC/ODBC lint and staging validation before the transition |
 
+The context pack exists because a roadmap is not runtime memory. OpenCode loads
+`AGENTS.md` and selected skills; it does not automatically turn this document
+or prior chat into task context. The new boot protocol uses
+`context/catalog.json`, a schema-valid task brief, narrow workflow skills,
+approved private context slices, and a resumable handoff so a lower-cost model
+receives the relevant judgment scaffolding at execution time.
+
 ## Build order
 
-Do not create eight large skills at once. Build the deterministic contract or
-script first, prove it with synthetic fixtures, then add the smallest useful
-skill trigger or OpenCode command. Keep the existing
-`finance-data-reliability` skill as the router until a workflow is independently
-reusable.
+The branch now contains thin routing skills and command contracts. Do not treat
+them as executable adapters. For each phase, build the deterministic script,
+sanitizer, or validator, prove it with synthetic fixtures, and only then promote
+the command from fail-closed guidance to an operational workflow.
 
 ### 0. Close the baseline adoption gate
 
@@ -51,21 +58,27 @@ Before adding new live integrations:
 Acceptance requires passing receipts with no credentials or internal
 identifiers, an explicit record of unavailable checks, and no live mutation.
 
-### 1. Add the task brief and capability snapshot
+### 1. Execute the task brief and capability snapshot
+
+The public task-brief schema, example, context catalog, workflow routing, model
+policy, tool-budget policy, and `/prepare-finance-task` command contract now
+exist. The remaining work is the deterministic builder, sanitizer, cache, and
+live capability-receipt integration described below.
 
 Candidate artifacts:
 
 ```text
 schemas/task-brief.schema.json
 schemas/capability-snapshot.schema.json
-policies/tool-budgets.yaml
+policies/tool-budgets.json
 src/finance_workbench/tasking/prepare.py
 ```
 
-Add `/prepare-agent-task` only after the wrapper exists. It should accept
+The current `/prepare-finance-task` is a prompt contract. Implement its wrapper
+before treating its output as runtime-enforced. The wrapper should accept
 approved aliases, outcome, grain, time window, tolerances, prohibited actions,
-and a tool budget. It should reuse fresh sanitized Power BI and Databricks
-capability receipts instead of repeating probes.
+and a tool budget, then reuse fresh sanitized Power BI and Databricks capability
+receipts instead of repeating probes.
 
 Acceptance criteria:
 
@@ -84,7 +97,6 @@ Candidate artifacts:
 ```text
 schemas/run-report.schema.json
 schemas/evidence-bundle.schema.json
-schemas/failure-case.schema.json
 schemas/run-ledger.schema.json
 src/finance_workbench/evidence/
 tests/python/test_evidence_ledger.py
@@ -107,22 +119,27 @@ Acceptance criteria:
 
 ### 3. Capture failures and evaluate model routing
 
+The `capture-agent-failure` skill/command, proposed-case schema, and synthetic
+example exist. They may produce a proposal under diagnosis scope and may create
+fixtures/tests only when the user explicitly asks to codify or remediate. They
+do not provide an automatic sanitizer, capture runner, corpus, or eval harness.
+
 Candidate artifacts:
 
 ```text
 evals/golden/
 evals/failures/
 evals/routing/
-policies/model-routing.yaml
+policies/model-routing.json
 src/finance_workbench/evals/capture.py
 src/finance_workbench/evals/runner.py
 ```
 
-Add a narrow `capture-agent-failure` skill after the sanitizer and schema are
-executable. Convert each real incident into a minimal synthetic fixture, the
-violated invariant, expected classification, deterministic result, and
-regression test. Compare models by task rather than choosing one model for the
-entire workbench.
+Implement the sanitizer and runner before automatic capture. Then convert each
+approved real incident into a minimal synthetic fixture, violated invariant,
+expected classification, deterministic result, and implemented regression
+test. Compare models by task rather than choosing one model for the entire
+workbench.
 
 Score at least:
 
@@ -210,11 +227,14 @@ exception; do not weaken the production-report ignore boundary.
 
 ### 6. Define machine-checkable finance semantic contracts
 
+The JSON Schema, synthetic JSON example, finance-semantics reference, and
+resolution command contract exist. The validator, approved private contracts,
+metric-view generator, and regression fixtures do not.
+
 Candidate artifacts:
 
 ```text
 schemas/finance-semantic-contract.schema.json
-templates/finance-semantic-contract.example.yaml
 src/finance_workbench/semantics/validate.py
 tests/fixtures/finance-contracts/
 ```

@@ -55,17 +55,30 @@ def test_required_agent_files_exist() -> None:
     assert all(path.is_file() for path in required)
 
 
-def test_opencode_profiles_are_explicit_and_private() -> None:
+def test_opencode_profiles_are_model_agnostic_and_private() -> None:
     config = json.loads((ROOT / "opencode.json").read_text(encoding="utf-8"))
 
     assert config["share"] == "disabled"
-    assert config["model"] == "azure/gpt-5.3-codex"
-    assert config["agent"]["finance-build"]["reasoningEffort"] == "medium"
-    assert config["agent"]["finance-deep"]["reasoningEffort"] == "high"
+    assert "model" not in config
 
-    for profile_name in ("finance-build", "finance-deep"):
+    for profile_name in (
+        "finance-scout",
+        "finance-compute",
+        "finance-build",
+        "finance-verifier",
+        "finance-deep",
+    ):
+        assert "model" not in config["agent"][profile_name]
+        assert "reasoningEffort" not in config["agent"][profile_name]
         bash_policy = config["agent"][profile_name]["permission"]["bash"]
-        assert bash_policy == {"*": "ask"}
+        if profile_name in {"finance-scout", "finance-compute", "finance-verifier"}:
+            assert bash_policy == {"*": "deny"}
+        else:
+            assert bash_policy == {"*": "ask"}
+
+    assert config["agent"]["finance-scout"]["permission"]["edit"] == "deny"
+    assert config["agent"]["finance-compute"]["permission"]["edit"] == "deny"
+    assert config["agent"]["finance-verifier"]["permission"]["edit"] == "deny"
 
 
 def test_skill_name_matches_directory() -> None:
@@ -243,9 +256,7 @@ def test_runwatch_is_documented_routed_and_approval_gated() -> None:
     assert "runwatch = \"runwatch.cli:main\"" in project
 
     for profile_name in ("finance-build", "finance-deep"):
-        assert config["agent"][profile_name]["permission"]["bash"] == {
-            "*": "ask"
-        }
+        assert config["agent"][profile_name]["permission"]["bash"]["*"] == "ask"
 
 
 def test_public_examples_use_synthetic_paths_and_identities() -> None:
@@ -372,7 +383,7 @@ def test_pbi_capabilities_command_is_read_only_and_approval_gated() -> None:
     command = config["command"]["pbi-capabilities"]
     template = command["template"]
 
-    assert command["agent"] == "finance-build"
+    assert command["agent"] == "finance-scout"
     assert "read-only capability inventory" in template
     assert "Never request, print, persist, decode, or accept a bearer token" in template
     for prohibited in (
@@ -389,9 +400,7 @@ def test_pbi_capabilities_command_is_read_only_and_approval_gated() -> None:
     ):
         assert prohibited in template
     for profile_name in ("finance-build", "finance-deep"):
-        assert config["agent"][profile_name]["permission"]["bash"] == {
-            "*": "ask"
-        }
+        assert config["agent"][profile_name]["permission"]["bash"]["*"] == "ask"
 
 
 def test_public_power_bi_guidance_contains_only_synthetic_targets() -> None:
@@ -507,7 +516,7 @@ def test_dbx_capabilities_is_metadata_only_and_token_safe() -> None:
     command = config["command"]["dbx-capabilities"]
     template = command["template"]
 
-    assert command["agent"] == "finance-build"
+    assert command["agent"] == "finance-scout"
     assert "MISSING_PREREQUISITE" in template
     assert "bounded nonrecursive approved workspace path" in template
     assert "aliases, counts, capability booleans" in template
@@ -530,7 +539,7 @@ def test_dbx_genie_probe_discloses_state_compute_and_unverified_result() -> None
     command = config["command"]["dbx-genie-probe"]
     template = command["template"]
 
-    assert command["agent"] == "finance-build"
+    assert command["agent"] == "finance-compute"
     assert "one task-scoped Genie interaction" in template
     assert "conversation state" in template
     assert "read query/warehouse compute" in template

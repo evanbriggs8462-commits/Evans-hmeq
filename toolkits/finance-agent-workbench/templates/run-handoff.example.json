@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "run_id": "SYNTHETIC-RUN-001",
+  "task_id": "SYNTHETIC-MIGRATION-001",
+  "task_brief_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "workflow_type": "inventory",
+  "mode": "read-only",
+  "status": "inconclusive",
+  "last_verified_boundary": "Source artifact fingerprint and query list captured.",
+  "completed_stages": ["inventory-partial"],
+  "context_manifest": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+    },
+    {
+      "path": ".opencode/skills/finance-report-migration/SKILL.md",
+      "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+    },
+    {
+      "path": ".opencode/skills/inventory-finance-report/SKILL.md",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    {
+      "path": ".opencode/skills/finance-report-migration/references/work-context.md",
+      "sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "path": ".opencode/skills/finance-report-migration/references/migration-playbook.md",
+      "sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    }
+  ],
+  "tool_versions": [
+    {
+      "name": "finance-agent-workbench",
+      "version": "synthetic-example",
+      "sha256": null
+    }
+  ],
+  "artifacts": [
+    {
+      "alias": "SOURCE_REPORT_A",
+      "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "state": "unchanged-during-inventory"
+    }
+  ],
+  "candidate_state": [],
+  "claims": [
+    {
+      "claim": "One helper query is referenced by the loaded table.",
+      "classification": "observed",
+      "evidence_refs": ["inventory:dependency-map"]
+    }
+  ],
+  "checks": [
+    {
+      "name": "artifact-fingerprint",
+      "status": "passed",
+      "evidence_ref": "receipt:source-fingerprint"
+    },
+    {
+      "name": "effective-date-policy",
+      "status": "not-run",
+      "evidence_ref": null
+    }
+  ],
+  "attempts": [],
+  "external_operation_ids": [],
+  "unresolved": ["Approved hierarchy effective-date rule is missing."],
+  "blocker": "MISSING_CONTEXT",
+  "highest_permitted_gate": "LOCAL_READ",
+  "uncommitted_or_live_state": ["No local candidate and no live operation were created."],
+  "next_permitted_step": "Resolve the hierarchy policy without changing the source or target.",
+  "resume_instruction": "Load resolve-finance-semantics with this task brief and handoff."
+}

@@ -1,0 +1,256 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/finance-agent-workbench/task-brief.schema.json",
+  "title": "Finance agent task brief",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "task_id",
+    "outcome",
+    "workflow_type",
+    "mode",
+    "known_facts",
+    "unknowns",
+    "semantic_contract",
+    "allowed_effects",
+    "highest_permitted_gate",
+    "prohibited_actions",
+    "selected_context",
+    "tool_budget",
+    "required_evidence",
+    "next_permitted_step"
+  ],
+  "properties": {
+    "version": {"const": 1},
+    "task_id": {"type": "string", "minLength": 1},
+    "outcome": {"type": "string", "minLength": 1},
+    "workflow_type": {
+      "enum": [
+        "inventory",
+        "semantic_resolution",
+        "query_migration",
+        "model_report_parity",
+        "reconciliation",
+        "refresh_profile",
+        "platform_discovery",
+        "failure_diagnosis",
+        "handoff"
+      ]
+    },
+    "mode": {
+      "enum": ["read-only", "local-candidate", "repository-publish", "controlled-write", "high-impact"]
+    },
+    "source_aliases": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "target_aliases": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "known_facts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["claim", "evidence_ref"],
+        "properties": {
+          "claim": {"type": "string"},
+          "evidence_ref": {"type": "string"}
+        }
+      }
+    },
+    "assumptions": {"type": "array", "items": {"type": "string"}},
+    "unknowns": {"type": "array", "items": {"type": "string"}},
+    "semantic_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["grain", "keys", "date_scope", "measures", "dimensions", "rules", "tolerances"],
+      "properties": {
+        "grain": {"type": ["string", "null"]},
+        "keys": {"type": "array", "items": {"type": "string"}},
+        "date_scope": {"type": ["string", "null"]},
+        "measures": {"type": "array", "items": {"type": "string"}},
+        "dimensions": {"type": "array", "items": {"type": "string"}},
+        "rules": {"type": "array", "items": {"type": "string"}},
+        "tolerances": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "allowed_effects": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "enum": [
+          "LOCAL_READ",
+          "LOCAL_CANDIDATE",
+          "EXTERNAL_READ_OR_COMPUTE",
+          "REPO_PUBLISH",
+          "LIVE_CONTROLLED_WRITE",
+          "LIVE_HIGH_IMPACT"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "highest_permitted_gate": {
+      "enum": [
+        "LOCAL_READ",
+        "LOCAL_CANDIDATE",
+        "EXTERNAL_READ_OR_COMPUTE",
+        "REPO_PUBLISH",
+        "LIVE_CONTROLLED_WRITE",
+        "LIVE_HIGH_IMPACT"
+      ]
+    },
+    "prohibited_actions": {"type": "array", "items": {"type": "string"}},
+    "selected_context": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "sha256", "reason"],
+        "properties": {
+          "path": {"type": "string"},
+          "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "reason": {"type": "string"},
+          "classification": {"enum": ["PUBLIC_SAFE", "WORK_INTERNAL"]}
+        }
+      }
+    },
+    "tool_budget": {"$ref": "#/$defs/toolBudget"},
+    "required_evidence": {"type": "array", "items": {"type": "string"}},
+    "next_permitted_step": {"type": "string", "minLength": 1}
+  },
+  "$defs": {
+    "toolBudget": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "max_files": {"type": "integer", "minimum": 0, "maximum": 10000},
+        "max_objects": {"type": "integer", "minimum": 0, "maximum": 10000},
+        "max_rows": {"type": "integer", "minimum": 0, "maximum": 1000000},
+        "max_bytes": {"type": "integer", "minimum": 0, "maximum": 1073741824},
+        "max_stdout_bytes": {"type": "integer", "minimum": 0, "maximum": 10485760},
+        "max_polls": {"type": "integer", "minimum": 0, "maximum": 1000},
+        "max_elapsed_seconds": {"type": "integer", "minimum": 0, "maximum": 86400},
+        "max_compute_actions": {"type": "integer", "minimum": 0, "maximum": 100},
+        "max_context_tokens": {"type": "integer", "minimum": 0, "maximum": 1000000}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"mode": {"const": "read-only"}}, "required": ["mode"]},
+      "then": {
+        "properties": {
+          "allowed_effects": {
+            "items": {"enum": ["LOCAL_READ", "EXTERNAL_READ_OR_COMPUTE"]}
+          },
+          "highest_permitted_gate": {
+            "enum": ["LOCAL_READ", "EXTERNAL_READ_OR_COMPUTE"]
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"mode": {"const": "local-candidate"}}, "required": ["mode"]},
+      "then": {
+        "properties": {
+          "allowed_effects": {
+            "items": {"enum": ["LOCAL_READ", "LOCAL_CANDIDATE", "EXTERNAL_READ_OR_COMPUTE"]}
+          },
+          "highest_permitted_gate": {
+            "enum": ["LOCAL_READ", "LOCAL_CANDIDATE", "EXTERNAL_READ_OR_COMPUTE"]
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"mode": {"const": "repository-publish"}}, "required": ["mode"]},
+      "then": {
+        "properties": {
+          "allowed_effects": {
+            "items": {"enum": ["LOCAL_READ", "LOCAL_CANDIDATE", "REPO_PUBLISH"]}
+          },
+          "highest_permitted_gate": {
+            "enum": ["LOCAL_READ", "LOCAL_CANDIDATE", "REPO_PUBLISH"]
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"mode": {"const": "controlled-write"}}, "required": ["mode"]},
+      "then": {
+        "properties": {
+          "allowed_effects": {
+            "items": {"enum": ["LOCAL_READ", "LOCAL_CANDIDATE", "EXTERNAL_READ_OR_COMPUTE", "REPO_PUBLISH", "LIVE_CONTROLLED_WRITE"]}
+          },
+          "highest_permitted_gate": {
+            "enum": ["LOCAL_READ", "LOCAL_CANDIDATE", "EXTERNAL_READ_OR_COMPUTE", "REPO_PUBLISH", "LIVE_CONTROLLED_WRITE"]
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"highest_permitted_gate": {"const": "LOCAL_READ"}}, "required": ["highest_permitted_gate"]},
+      "then": {
+        "properties": {
+          "allowed_effects": {
+            "items": {"enum": ["LOCAL_READ"]},
+            "contains": {"const": "LOCAL_READ"}
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"highest_permitted_gate": {"const": "LOCAL_CANDIDATE"}}, "required": ["highest_permitted_gate"]},
+      "then": {
+        "properties": {
+          "allowed_effects": {
+            "items": {"enum": ["LOCAL_READ", "LOCAL_CANDIDATE"]},
+            "contains": {"const": "LOCAL_CANDIDATE"}
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"highest_permitted_gate": {"const": "EXTERNAL_READ_OR_COMPUTE"}}, "required": ["highest_permitted_gate"]},
+      "then": {
+        "properties": {
+          "allowed_effects": {
+            "items": {"enum": ["LOCAL_READ", "LOCAL_CANDIDATE", "EXTERNAL_READ_OR_COMPUTE"]},
+            "contains": {"const": "EXTERNAL_READ_OR_COMPUTE"}
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"highest_permitted_gate": {"const": "REPO_PUBLISH"}}, "required": ["highest_permitted_gate"]},
+      "then": {
+        "properties": {
+          "allowed_effects": {
+            "items": {"enum": ["LOCAL_READ", "LOCAL_CANDIDATE", "REPO_PUBLISH"]},
+            "contains": {"const": "REPO_PUBLISH"}
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"highest_permitted_gate": {"const": "LIVE_CONTROLLED_WRITE"}}, "required": ["highest_permitted_gate"]},
+      "then": {
+        "properties": {
+          "allowed_effects": {
+            "items": {"enum": ["LOCAL_READ", "LOCAL_CANDIDATE", "EXTERNAL_READ_OR_COMPUTE", "REPO_PUBLISH", "LIVE_CONTROLLED_WRITE"]},
+            "contains": {"const": "LIVE_CONTROLLED_WRITE"}
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"highest_permitted_gate": {"const": "LIVE_HIGH_IMPACT"}}, "required": ["highest_permitted_gate"]},
+      "then": {
+        "properties": {
+          "allowed_effects": {
+            "items": {"enum": ["LOCAL_READ", "LOCAL_CANDIDATE", "EXTERNAL_READ_OR_COMPUTE", "REPO_PUBLISH", "LIVE_CONTROLLED_WRITE", "LIVE_HIGH_IMPACT"]},
+            "contains": {"const": "LIVE_HIGH_IMPACT"}
+          }
+        }
+      }
+    }
+  ]
+}

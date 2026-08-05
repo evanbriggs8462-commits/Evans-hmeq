@@ -46,4 +46,4 @@ rotate or revoke the credential when applicable.
 
 ## Command permissions
 
-Treat a shell command as write-capable unless every accepted argument is constrained by a narrow wrapper. Many apparently read-only commands accept an output path, load plugins, or execute project code. This repository therefore asks before every shell invocation; the wrapper's own path and postcondition checks are a second boundary, not a reason to broadly auto-allow a command prefix.
+Treat a shell command as write-capable unless every accepted argument is constrained by a narrow wrapper. Many apparently read-only commands accept an output path, load plugins, or execute project code. The scout, verifier, and bounded-compute roles therefore deny shell execution. Builder and investigator roles ask before shell invocation; a wrapper's own path and postcondition checks are a second boundary, not a reason to broadly auto-allow a command prefix.

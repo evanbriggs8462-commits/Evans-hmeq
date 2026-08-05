@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "inventory_id": "SYNTHETIC-INVENTORY-001",
+  "task_id": "SYNTHETIC-MIGRATION-001",
+  "status": "partial",
+  "artifacts": [
+    {
+      "alias": "RELATIONSHIP_SCREENSHOT_A",
+      "type": "screenshot",
+      "sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+      "evidence_status": "observed",
+      "evidence_refs": ["receipt:relationship-screenshot-fingerprint"]
+    },
+    {
+      "alias": "SOURCE_REPORT_A",
+      "type": "PBIX_OR_PBIP",
+      "sha256": null,
+      "evidence_status": "blocked",
+      "evidence_refs": []
+    }
+  ],
+  "data_acquisition": {
+    "queries": ["PASTED_QUERY_A"],
+    "parameters": [],
+    "helper_dependencies": [],
+    "source_rules": ["Monthly XML selection rule is not yet observed."],
+    "unknowns": ["Sample-file and generated-function dependencies are missing."]
+  },
+  "semantic_model": {
+    "tables": [],
+    "measures": [],
+    "calculated_objects": [],
+    "relationships": ["Screenshot indicates a relationship but does not prove key/cardinality metadata."],
+    "roles": [],
+    "partitions": [],
+    "unknowns": ["Machine-readable model metadata is unavailable."]
+  },
+  "report_layer": {
+    "pages": [],
+    "visuals": [],
+    "filters_slicers": [],
+    "bookmarks_navigation": [],
+    "theme_assets": [],
+    "unknowns": ["Report definition is unavailable."]
+  },
+  "operations": {
+    "refresh": [],
+    "dependencies": [],
+    "consumer_deadlines": [],
+    "unknowns": ["Refresh and ownership evidence is unavailable."]
+  },
+  "evidence_map": [
+    {
+      "item_ref": "data_acquisition.queries[0]",
+      "evidence_status": "observed",
+      "evidence_refs": ["artifact:PASTED_QUERY_A"]
+    },
+    {
+      "item_ref": "semantic_model.relationships[0]",
+      "evidence_status": "inferred",
+      "evidence_refs": ["artifact:RELATIONSHIP_SCREENSHOT_A"]
+    },
+    {
+      "item_ref": "report_layer",
+      "evidence_status": "blocked",
+      "evidence_refs": []
+    }
+  ],
+  "known_control_evidence": [],
+  "missing_artifacts": ["Original report or approved machine-readable export", "complete M dependency group"],
+  "risk_hotspots": ["partial inventory", "effective-dated hierarchy", "trailing-minus parsing", "unknown FX date"]
+}

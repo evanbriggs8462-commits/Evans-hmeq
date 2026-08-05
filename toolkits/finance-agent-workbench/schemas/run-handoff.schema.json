@@ -1,0 +1,242 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/finance-agent-workbench/run-handoff.schema.json",
+  "title": "Finance agent resumable run handoff",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "run_id",
+    "task_id",
+    "task_brief_sha256",
+    "workflow_type",
+    "mode",
+    "status",
+    "last_verified_boundary",
+    "completed_stages",
+    "context_manifest",
+    "tool_versions",
+    "artifacts",
+    "candidate_state",
+    "claims",
+    "checks",
+    "unresolved",
+    "blocker",
+    "highest_permitted_gate",
+    "uncommitted_or_live_state",
+    "next_permitted_step",
+    "resume_instruction"
+  ],
+  "properties": {
+    "version": {"const": 1},
+    "run_id": {"type": "string", "minLength": 1},
+    "task_id": {"type": "string", "minLength": 1},
+    "task_brief_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "workflow_type": {"type": "string", "minLength": 1},
+    "mode": {"enum": ["read-only", "local-candidate", "repository-publish", "controlled-write", "high-impact"]},
+    "status": {"enum": ["passed", "failed", "inconclusive", "blocked", "in-progress"]},
+    "last_verified_boundary": {"type": "string"},
+    "completed_stages": {"type": "array", "items": {"type": "string"}},
+    "context_manifest": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "sha256"],
+        "properties": {
+          "path": {"type": "string"},
+          "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+        }
+      }
+    },
+    "tool_versions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "version", "sha256"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "version": {"type": "string", "minLength": 1},
+          "sha256": {
+            "oneOf": [
+              {"type": "null"},
+              {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+            ]
+          }
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["alias", "sha256", "state"],
+        "properties": {
+          "alias": {"type": "string"},
+          "sha256": {
+            "oneOf": [
+              {"type": "null"},
+              {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+            ]
+          },
+          "state": {"type": "string"}
+        }
+      }
+    },
+    "candidate_state": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["alias", "sha256", "state", "uncommitted"],
+        "properties": {
+          "alias": {"type": "string"},
+          "sha256": {
+            "oneOf": [
+              {"type": "null"},
+              {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+            ]
+          },
+          "state": {"type": "string"},
+          "uncommitted": {"type": "boolean"}
+        }
+      }
+    },
+    "claims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["claim", "classification", "evidence_refs"],
+        "properties": {
+          "claim": {"type": "string"},
+          "classification": {"enum": ["observed", "inferred", "verified"]},
+          "evidence_refs": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "status"],
+        "properties": {
+          "name": {"type": "string"},
+          "status": {"enum": ["passed", "failed", "inconclusive", "not-run"]},
+          "evidence_ref": {"type": ["string", "null"]}
+        }
+      }
+    },
+    "attempts": {"type": "array", "items": {"type": "string"}},
+    "external_operation_ids": {"type": "array", "items": {"type": "string"}},
+    "unresolved": {"type": "array", "items": {"type": "string"}},
+    "blocker": {"type": ["string", "null"]},
+    "highest_permitted_gate": {
+      "enum": [
+        "LOCAL_READ",
+        "LOCAL_CANDIDATE",
+        "EXTERNAL_READ_OR_COMPUTE",
+        "REPO_PUBLISH",
+        "LIVE_CONTROLLED_WRITE",
+        "LIVE_HIGH_IMPACT"
+      ]
+    },
+    "uncommitted_or_live_state": {"type": "array", "items": {"type": "string"}},
+    "next_permitted_step": {"type": "string", "minLength": 1},
+    "resume_instruction": {"type": "string", "minLength": 1}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "passed"}}, "required": ["status"]},
+      "then": {
+        "properties": {
+          "unresolved": {"maxItems": 0},
+          "blocker": {"type": "null"},
+          "claims": {
+            "minItems": 1,
+            "items": {
+              "properties": {
+                "classification": {"const": "verified"},
+                "evidence_refs": {
+                  "minItems": 1,
+                  "items": {"type": "string", "minLength": 1}
+                }
+              }
+            }
+          },
+          "checks": {
+            "minItems": 1,
+            "items": {
+              "required": ["evidence_ref"],
+              "properties": {
+                "status": {"const": "passed"},
+                "evidence_ref": {"type": "string", "minLength": 1}
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"status": {"const": "blocked"}}, "required": ["status"]},
+      "then": {"properties": {"blocker": {"type": "string", "minLength": 1}}}
+    },
+    {
+      "if": {"properties": {"status": {"const": "failed"}}, "required": ["status"]},
+      "then": {
+        "properties": {
+          "checks": {
+            "contains": {
+              "type": "object",
+              "properties": {"status": {"const": "failed"}},
+              "required": ["status"]
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"mode": {"const": "read-only"}}, "required": ["mode"]},
+      "then": {
+        "properties": {
+          "highest_permitted_gate": {
+            "enum": ["LOCAL_READ", "EXTERNAL_READ_OR_COMPUTE"]
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"mode": {"const": "local-candidate"}}, "required": ["mode"]},
+      "then": {
+        "properties": {
+          "highest_permitted_gate": {
+            "enum": ["LOCAL_READ", "LOCAL_CANDIDATE", "EXTERNAL_READ_OR_COMPUTE"]
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"mode": {"const": "repository-publish"}}, "required": ["mode"]},
+      "then": {
+        "properties": {
+          "highest_permitted_gate": {
+            "enum": ["LOCAL_READ", "LOCAL_CANDIDATE", "REPO_PUBLISH"]
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"mode": {"const": "controlled-write"}}, "required": ["mode"]},
+      "then": {
+        "properties": {
+          "highest_permitted_gate": {
+            "enum": ["LOCAL_READ", "LOCAL_CANDIDATE", "EXTERNAL_READ_OR_COMPUTE", "REPO_PUBLISH", "LIVE_CONTROLLED_WRITE"]
+          }
+        }
+      }
+    }
+  ]
+}

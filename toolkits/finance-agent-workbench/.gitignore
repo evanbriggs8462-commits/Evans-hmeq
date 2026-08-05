@@ -47,6 +47,11 @@ genie-state/
 genie-transcripts/
 query-results/
 
+# Approved private context and resumable local task state.
+context/local-context.json
+.finance-context/
+task-state/
+
 # Secrets and local overrides.
 .env
 .env.*

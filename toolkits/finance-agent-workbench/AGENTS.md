@@ -2,6 +2,40 @@
 
 Use this repository to build repeatable, evidence-backed automation for large finance data exports, file-share staging, Python inspection, Databricks reconciliation, and Power BI semantic-model work.
 
+## Context boot protocol
+
+For every material finance task:
+
+1. Classify the request as context bootstrap, task preparation, inventory,
+   semantic resolution, query migration, model/report parity, reconciliation,
+   refresh profiling, platform discovery, failure diagnosis, or handoff.
+2. Read the narrow workflow skill and references named by
+   `context/catalog.json`. Load `finance-report-migration` and its work context
+   only for report inventory, migration, semantic, parity, reconciliation, or
+   refresh work—not for unrelated platform discovery or failure diagnosis.
+3. Build or reuse a task brief conforming to
+   `schemas/task-brief.schema.json` before broad tool use. Reuse fresh
+   capability receipts and prior handoffs instead of rediscovering the same
+   environment.
+4. If the ignored `context/local-context.json` exists, load only fields required
+   by the task and approved for the configured model/provider. Loading a field
+   into OpenCode context transmits it to that provider unless the model is
+   genuinely local. If that boundary is not approved, use only a pre-generated
+   approved projection or an installed deterministic redaction adapter. If
+   neither exists, omit the private values and mark dependent conclusions
+   `MISSING_CONTEXT` or `MISSING_PREREQUISITE`; never ask the model to redact
+   raw private values. Never invent a metric, ledger equivalence, hierarchy
+   edge, source mapping, join key, effective date, sign, FX rule, or tolerance.
+5. Load every reference required by the selected workflow, but do not flood the
+   model with unrelated runbooks.
+6. Finish each material phase with a handoff conforming to
+   `schemas/run-handoff.schema.json` so another model can resume without the
+   chat transcript.
+
+The durable context is the combination of routing, references, private overlay,
+schemas, artifacts, receipts, and tests. A README, roadmap, or long prompt alone
+is not runtime memory.
+
 ## Required behavior
 
 1. Act as an orchestrator. Prefer versioned scripts, tests, and narrow wrappers over improvised shell commands. If an operation will recur, make it deterministic and parameterized.
@@ -16,6 +50,27 @@ Use this repository to build repeatable, evidence-backed automation for large fi
 6. Do not suppress errors or retry indefinitely. Classify the failure, use bounded retries only for a demonstrated transient condition, and preserve a sanitized receipt.
 7. Do not claim success from a zero exit code alone. Validate the intended postcondition and record the evidence.
 
+## Authorization by effect
+
+Interpret authorization by the effect of the action:
+
+- **Local read:** inspect repository files and approved local artifacts.
+- **Repo-local candidate:** when the user asks to build, fix, change, refactor,
+  migrate, or implement, create the scoped local patch, synthetic fixtures, and
+  relevant tests without treating each reversible edit as a live-system write.
+- **External read or compute:** use only the approved bounded adapter and
+  disclose query, refresh, Genie, or warehouse-compute effects.
+- **Repository publish:** an explicit request to push authorizes only the exact
+  repository and branch; it does not authorize merge, force-push, deletion, or
+  any business-system mutation.
+- **Live controlled/high-impact write:** apply the exact gates below.
+
+MISSING_PREREQUISITE blocks only the exact unavailable action. When the request
+authorizes build/change work, continue safe repo-local candidates, synthetic
+fixtures, tests, documentation, dry runs, and a resumable handoff. For
+diagnosis/review scope, keep the fallback non-mutating. Never fake missing
+evidence or broaden authority to work around the block.
+
 ## Large remote file hard stops
 
 For any large XML, SAP spool export, UNC path, mapped network drive, VPN/SMB
@@ -23,61 +78,39 @@ transfer, or killed/timed-out file command, read
 `.opencode/skills/finance-data-reliability/references/large-xml-smb-runbook.md`
 before issuing another content-reading or copy command.
 
-- Metadata access is not content validation. `Test-Path` and `Get-Item` can
-  establish visibility, size, and timestamps only.
-- Never use an expression that loads the complete file before slicing it,
-  including `Path.read_bytes()[:N]`, `ReadAllBytes()`, `Get-Content -Raw`,
-  `[xml](Get-Content ...)`, or `ElementTree.parse()` on a multi-gigabyte input.
-- `Get-Content -TotalCount N` counts text lines, not bytes, XML elements, or
-  business records. It is not a bounded-byte probe and must not be used to
-  inspect a large XML export.
-- Never validate XML with regular expressions. A bounded prefix can support an
-  explicitly labeled encoding or schema hypothesis only; it cannot prove EOF,
-  namespaces, row count, required fields, or business semantics.
-- "Local" means an approved, ready fixed volume outside OneDrive and every
-  other sync root, with no reparse-point ancestor and enough free capacity.
-  A directory underneath the current workspace is not automatically an
-  acceptable staging destination.
-- Use `scripts/Stage-Spool.ps1` for the network-to-local boundary. Do not
-  manually substitute `Copy-Item`, a byte loop, an ad hoc Python copy, or a
-  newly created `local_staging` directory.
-- Do not keep a multi-gigabyte VPN copy inside an interactive agent shell whose
-  wall-clock limit is shorter than the expected transfer. Use an approved
-  terminal or job runner, preserve restartable `.part` state, and return the
-  sanitized receipt to the agent.
-- In PowerShell, `$?` is the last pipeline-success indicator, is independent
-  of a cmdlet's Boolean output, and is overwritten by the next pipeline. It is
-  not the value emitted by `Test-Path` and never replaces the numeric
-  `$LASTEXITCODE` captured immediately after a native process. Branch directly
-  on `if (Test-Path -LiteralPath $path -ErrorAction Stop) { ... }`.
+- Metadata and bounded prefixes do not prove content validity; never load an
+  unbounded export into memory or validate XML with regex.
+- Stage once through `scripts/Stage-Spool.ps1` to an approved local fixed volume
+  outside sync/network roots, then stream-parse only the finalized artifact.
+- Use an approved durable runner when the transfer may exceed the host timeout,
+  and capture the native numeric exit code plus the sanitized receipt.
 
 ## Long-running command observability
 
-For a bounded noninteractive command that may be quiet for 30 seconds or more,
-read `docs/long-running-task-observability.md`. When the command is proven to
-fit inside the host's hard wall-clock limit, invoke it through `runwatch` so a
-person receives a sanitized monotonic timer and can poll an atomic local status
-file.
-
-- A heartbeat proves only that the attached supervisor observed the direct
-  child had not exited at that instant. It does not prove bytes, rows, or
-  business work are progressing. Treat it as liveness evidence only.
-- A local heartbeat also does not prove a Power BI service refresh is making
-  progress. Only polling the exact service request ID establishes its state.
-- `runwatch` cannot extend a hard host timeout or make a child durable. If the
-  expected duration may exceed the host limit, use the approved external
-  terminal or job runner and return its receipt.
-- Keep status on an approved local fixed volume outside network and sync roots.
-  Never commit runtime status, child output, commands, arguments, or paths.
-- The child inherits stdout and stderr. Keep stdout machine-readable, expect
-  heartbeat and child diagnostics to interleave on stderr, and poll the JSON
-  status for machine decisions.
-- `runwatch` is a general command launcher, not a permission bypass. Apply the
-  existing command approval and write gates to the exact child invocation.
+For a bounded quiet command, read
+`docs/long-running-task-observability.md`. Use `runwatch` only when the child
+fits inside the host limit: heartbeat is liveness, not progress, and cannot
+make work durable or extend a timeout. Poll the exact service request ID for a
+remote operation, keep local status ignored, and apply normal approval gates.
 
 ## Skill routing
 
-For file staging, XML inspection, Databricks access/reconciliation, or Power BI work, read `.opencode/skills/finance-data-reliability/SKILL.md` and every reference it routes for the task. When more than one trigger matches, load all matching references. The large-XML/SMB runbook is mandatory before retrying a failed or timed-out remote content operation. The Databricks access runbook is mandatory before authentication, CLI/SDK inventory, Genie, or Databricks MCP work. The Premium-workspace runbook is mandatory for Power BI REST, Fabric REST, XMLA, service-side Tabular Editor or TMDL View, Power BI MCP, published-model, enhanced-refresh, refresh-history, or expiring-token work. The report-authoring runbook is mandatory for PBIP/PBIR pages, visuals, layout, Desktop Bridge, or report-definition retrieval/replacement.
+For report recreation, reverse engineering, M/SQL/DAX migration, finance
+semantics, hierarchy work, reconciliation, report parity, or refresh profiling,
+read `.opencode/skills/finance-report-migration/SKILL.md` and the narrow skill
+selected in `context/catalog.json`.
+
+For file staging, XML inspection, Databricks access/reconciliation, or Power BI
+work, also read `.opencode/skills/finance-data-reliability/SKILL.md` and every
+reference it routes for the task. When more than one trigger matches, load all
+matching references. The large-XML/SMB runbook is mandatory before retrying a
+failed or timed-out remote content operation. The Databricks access runbook is
+mandatory before authentication, CLI/SDK inventory, Genie, or Databricks MCP
+work. The Premium-workspace runbook is mandatory for Power BI REST, Fabric
+REST, XMLA, service-side Tabular Editor or TMDL View, Power BI MCP,
+published-model, enhanced-refresh, refresh-history, or expiring-token work.
+The report-authoring runbook is mandatory for PBIP/PBIR pages, visuals, layout,
+Desktop Bridge, or report-definition retrieval/replacement.
 
 ## Change gates
 
@@ -89,23 +122,15 @@ For file staging, XML inspection, Databricks access/reconciliation, or Power BI 
 ## Power BI boundaries
 
 - Treat DAX Studio as a query, inspection, test, and performance-analysis tool; do not present it as a PBIX or Power Query editor.
-- Use Power BI REST or the remote query MCP for supported discovery, refresh orchestration, history, and bounded query operations. Use XMLA/TOM through Tabular Editor 2 or the local Modeling MCP for published semantic-model metadata. Use Desktop/PBIP for report pages, visuals, layout, and local Power Query authoring.
-- Treat Tabular Editor 2 as a TOM semantic-model metadata editor. A save to a service model opened through XMLA is an immediate live shared-model write, not a local candidate waiting for publish.
-- External processing commands remain unsupported against a model loaded in Power BI Desktop. Do not generalize that Desktop restriction to a capacity-backed service model: authorized service XMLA/TOM/TMSL and enhanced REST refresh can process published semantic models.
-- Build supports external query/read scenarios; model Write is required for XMLA metadata mutation and is normally inherited by workspace Contributor, Member, and Admin roles. Neither proves OAuth scope, tenant settings, capacity XMLA Read Write, ownership, gateway access, or model compatibility.
-- Tabular Editor 2 can write an M partition expression as metadata, but it cannot execute or validate Power Query M or schema-check the evaluated partition. Validate M in Desktop/test before promotion or through a separately authorized service refresh using the service credentials and gateway.
-- Preserve the original PBIX and a private canonical metadata baseline before the first XMLA write to a Desktop-authored published model. An XMLA write can make that semantic model unavailable for PBIX download.
-- Use the preview Power BI Report Authoring skill for PBIP/PBIR report-layer changes, not the Modeling MCP. A published report workflow retrieves the complete PBIR definition, edits and validates a private local candidate, reviews a Desktop rendering and diff, then requires a separate high-impact gate before whole-definition `updateDefinition`.
-- Treat report `updateDefinition` as a complete-definition replacement, never a one-visual patch. Refuse publication when the baseline changed concurrently, bindings are unresolved, an encrypted sensitivity label blocks retrieval, the LRO is nonterminal, or rollback evidence is missing.
+- Treat Tabular Editor 2/XMLA/TOM as semantic-model metadata tooling; a connected service save is an immediate live write, and stored M is not evaluated M.
+- External processing is unsupported against a model loaded in Desktop; separately authorized service XMLA/TOM/TMSL or enhanced REST processing is a different boundary.
+- Use Desktop/PBIP/PBIR/report-authoring tools for report pages and Power Query. Whole-definition publication remains a high-impact replacement with baseline, render, validation, and rollback gates.
 
 ## Databricks access boundaries
 
-- Prefer one explicit named OAuth U2M profile and the Databricks Python SDK over parallel raw REST, CLI, SQL, and MCP paths. Never request, print, decode, export, or accept a bearer token; PAT authentication is a separately approved legacy fallback.
-- Use `/dbx-capabilities` for bounded metadata inventory. Visible catalogs, schemas, notebooks, warehouses, or tables are not automatically approved or queryable; intersect platform visibility with a private allowlist and effective Unity Catalog/workspace permissions.
-- Use `/dbx-genie-probe` only against an allowlisted Genie Agent alias. Genie discovers candidate sources and SQL; it cannot certify finance logic. A separate deterministic reconciliation check must prove grain, keys, dates, currency, signs, duplicates, totals, and snapshot alignment.
-- The configured Genie table list is context, not the security boundary. Unity Catalog grants, row filters, column masks, the calling identity, and company approval are the boundary.
-- Keep the broad Databricks SQL MCP disabled for the production finance agent. Current vendor documentation describes it as read and write. A read-only prompt is not a technical write control.
-- Listing warehouse state must not start compute. Any query, Genie call, job run, or warehouse start is a distinct cost/data-access operation. Preserve remote operation IDs and poll them; local heartbeat is not remote progress.
+- `/dbx-capabilities` and `/dbx-genie-probe` are fail-closed contracts until an approved narrow adapter exists; never substitute token input, raw REST, or generic shell access.
+- Visibility is not approval or query/write authority. Listing state must not start compute; queries, Genie, jobs, and warehouse starts are distinct disclosed effects.
+- Genie output is an unverified hypothesis until independent finance checks pass. Keep the broad read/write Databricks SQL MCP disabled for the default production path.
 
 ## Evidence and reporting
 
@@ -115,7 +140,7 @@ Label conclusions as **observed**, **inferred**, or **verified**. If validation 
 
 ## Model controls
 
-- Use medium reasoning for routine implementation, inspection, and known failure patterns.
-- Use high reasoning for ambiguous schema drift, unexplained reconciliation differences, cross-system date/currency/grain issues, or risky model changes.
-- Plan/Build controls orchestration and tool permissions; it is separate from reasoning effort.
-- Higher reasoning never replaces deterministic checks, tests, receipts, or approval gates.
+- The checked-in roles are model-agnostic: scout, builder, verifier, bounded external compute, and bounded investigator. The approved session or private configuration selects the model.
+- Use the least expensive approved model that passes the task-family evals. Escalate only one bounded ambiguity or failed invariant at a time.
+- The scout and verifier cannot edit or execute shell commands. External compute is a separate explicitly invoked role with disclosed effects. The investigator receives no broader authority than the builder, and no role gains live-system authority from model choice.
+- Reasoning settings never replace deterministic checks, tests, receipts, or approval gates.

@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "classification": "WORK_INTERNAL",
+  "model_context_boundary": {
+    "configured_provider_alias": "<approved-private-value>",
+    "work_internal_allowed": false,
+    "redaction_projection_required": true
+  },
+  "operator_preferences": {
+    "delivery": "artifact-first",
+    "routine_narration": "concise",
+    "safe_local_candidate_work": "continue-within-task-scope",
+    "live_writes": "exact-target-and-explicit-gate"
+  },
+  "environment_aliases": {
+    "power_bi_workspaces": [],
+    "semantic_models": [],
+    "reports": [],
+    "databricks_profiles": [],
+    "warehouses": [],
+    "catalogs": [],
+    "schemas": [],
+    "genie_agents": [],
+    "source_shares": [],
+    "local_staging_roots": []
+  },
+  "report_portfolio": {
+    "critical_refresh_window_local": "<approved-private-value>",
+    "close_periods": [],
+    "consumer_deadlines": [],
+    "report_entries": []
+  },
+  "semantic_rules": {
+    "metrics": [],
+    "ledgers": [],
+    "date_roles": [],
+    "hierarchies": [],
+    "sign_rules": [],
+    "currency_and_fx": [],
+    "intercompany_and_markup": [],
+    "null_blank_zero": [],
+    "tolerances": []
+  },
+  "source_quirks": [],
+  "approved_tools": [],
+  "capability_receipts": [],
+  "internal_runbook_aliases": [],
+  "prohibited_context": [
+    "credentials",
+    "bearer_tokens",
+    "raw_finance_rows",
+    "personal_data",
+    "authorization_headers"
+  ]
+}

@@ -15,11 +15,20 @@ OpenCode discovers a root `AGENTS.md` and `.opencode/skills/*/SKILL.md` automati
 
 For a separate report repository:
 
-1. Copy or submodule `.opencode/skills/finance-data-reliability/`.
-2. Merge relevant operating rules into that repository's `AGENTS.md`.
-3. Merge model/agent settings into its `opencode.json` without replacing provider or MCP configuration.
-4. Keep the actual provider credential in the approved credential store or environment, never in Git.
-5. Run the tests with synthetic data before pointing any script at a share.
+1. Copy or submodule the complete coherent workbench package. At minimum this
+   includes `AGENTS.md`, `.gitignore`, `opencode.json`, `pyproject.toml`,
+   `.opencode/skills/`, `context/` (excluding `context/local-context.json`),
+   `policies/`, `schemas/`, `templates/`, `docs/`, every deterministic
+   script/source the routes use, and their tests.
+2. Merge the operating rules and OpenCode configuration; do not overwrite
+   provider, model, MCP, or organization-managed settings blindly.
+3. Keep provider credentials and exact `WORK_INTERNAL` context in the approved
+   credential/private-context boundary, never in Git.
+4. Verify every catalog route and referenced file after copying. A partial
+   skill install is unsupported because it breaks task preparation and
+   handoff contracts.
+5. Run the tests with synthetic data before pointing any script at a share or
+   approved live adapter.
 
 ## Convert experience into durable knowledge
 
@@ -45,4 +54,3 @@ Review the pack after:
 - any false success, destructive near miss, or unexplained reconciliation difference.
 
 Changes should be made through a branch and reviewed as code. A runbook claim is incomplete until a test or receipt contract supports it where practical.
-

@@ -2,13 +2,23 @@
 
 A portable knowledge and validation pack for agent-assisted finance data work with OpenCode, PowerShell, Python, SAP spool XML, Databricks, DAX Studio, Tabular Editor 2, and Power BI.
 
-The central design decision is simple: the model may plan, invoke approved wrappers, and interpret machine-readable receipts. Deterministic code copies files, parses XML, validates outputs, and performs reconciliations. The model never gets to infer success from a plausible-looking console message.
+The central design decision is simple: the model may plan, invoke approved
+wrappers, and interpret machine-readable receipts. Deterministic code—not model
+narrative—must establish file, parsing, validation, and reconciliation truth.
+The current executable code covers staging, streaming XML inspection, and
+bounded liveness; several Power BI, Databricks, reconciliation, and context
+workflows remain fail-closed command contracts until their approved adapters
+or validators are installed.
 
 ## What is included
 
 - `AGENTS.md` — always-loaded project operating rules.
 - `.opencode/skills/finance-data-reliability/` — on-demand workflow knowledge and tool boundaries.
-- `opencode.json` — explicit GPT-5.3-Codex agents with medium and high reasoning profiles.
+- `.opencode/skills/finance-report-migration/` — the sanitized work context and end-to-end report migration playbook.
+- Narrow skills for task preparation, inventory, semantic resolution, query migration, reconciliation, refresh profiling, failure capture, and handoff.
+- `context/catalog.json` plus an ignored `context/local-context.json` overlay — progressive context loading for lower-cost models without committing private identifiers or rules.
+- `schemas/`, `templates/`, and `policies/` — task/handoff contracts, synthetic examples, tool budgets, and model-routing guidance.
+- `opencode.json` — model-agnostic scout, builder, verifier, and bounded-investigator roles; the selected session or private configuration supplies the approved model.
 - `scripts/Stage-Spool.ps1` — bounded, receipt-producing UNC-to-local staging.
 - `src/spoolctl/` — strict streaming XML inspection and contracts.
 - `src/runwatch/` — elapsed-time heartbeats and atomic, sanitized liveness status for bounded child commands.
@@ -47,11 +57,19 @@ It covers Microsoft's preview Report Authoring skill and PBIR workflow. It is
 a local candidate-and-review path, not a direct production visual-edit API;
 publishing remains a separately approved whole-definition replacement.
 
+For end-to-end legacy report recreation or migration, use
+[Finance report migration](.opencode/skills/finance-report-migration/SKILL.md).
+It gives the local model the stable work context, finance semantic rules,
+inventory and migration workflow, positive fallbacks when a live adapter is
+missing, model-routing guidance, and a resumable handoff contract. It should be
+loaded with the reliability skill whenever the task touches files, Databricks,
+Power BI, or a live system.
+
 ## Safe adoption
 
 1. Put this repository on a company-approved private Git host before adding any internal knowledge.
 2. Keep credentials, real UNC paths, SAP exports, screenshots, PBIX files, proprietary schemas, hierarchy maps, and client identifiers out of Git.
-3. Open the repository root in OpenCode. It discovers `AGENTS.md` and the project skill automatically. Large XML, UNC, SMB, VPN, OneDrive, killed-process, and timeout triggers route to the mandatory large-file runbook. Premium/Fabric workspace, REST, XMLA, MCP, service TMDL, enhanced-refresh, and token triggers route to the Power BI runbook before tool selection.
+3. Open the repository root in OpenCode. It discovers `AGENTS.md` and the project skills automatically. The context boot protocol routes finance work through `context/catalog.json`; large XML, Databricks, and Power BI triggers also load their mandatory reliability references before tool selection.
 4. Merge `opencode.json` into any existing project configuration; do not overwrite provider, MCP, or organization-managed settings blindly.
 5. Start with anonymized fixtures and a read-only shadow run. Promote a workflow only after its receipts and reconciliation results match the established process.
 
@@ -63,27 +81,98 @@ Capture a sanitized workstation profile before troubleshooting:
 
 The profile intentionally omits usernames, computer names, physical paths, environment variables, and endpoints.
 
-For an existing report repository, copy or submodule the `.opencode/skills/finance-data-reliability` folder, merge the relevant `AGENTS.md` rules, and bring over only the deterministic scripts actually used by that report.
+For an existing report repository, copy or submodule the complete workbench
+package, not an isolated skill. The minimum coherent set is `AGENTS.md`,
+`.gitignore`, `opencode.json`, `pyproject.toml`, `.opencode/skills/`, `context/`
+(excluding the ignored private overlay), `policies/`, `schemas/`, `templates/`,
+`docs/`, the deterministic scripts/source actually used, and their tests.
+Partial copying leaves skill routes and contracts broken.
 
-## Agent profiles
+## Agent roles and model choice
 
-- `finance-build`: medium reasoning for ordinary implementation and diagnosis.
-- `finance-deep`: high reasoning for schema drift, unexplained reconciliation differences, or cross-system failures.
+- `finance-scout`: classify, prepare, and perform approved no-state metadata reads with repository edits and shell execution denied.
+- `finance-build`: create an explicitly requested repo-local candidate and focused tests.
+- `finance-verifier`: independently review diffs, receipts, and evidence with repository edits and shell execution denied.
+- `finance-compute`: perform one explicitly invoked bounded external read/compute action through an approved adapter, with effects disclosed and shell/edit access denied.
+- `finance-deep`: investigate one bounded semantic or cross-system ambiguity with no broader authority than the builder.
 
-Build/Plan controls tool permissions. It is separate from reasoning effort. Do not use high or xhigh reasoning as a substitute for tests, receipts, allowlists, or review gates.
+The checked-in roles deliberately omit `model` and provider-specific reasoning
+options. Select an approved inexpensive/local model for the session or bind
+role-to-model aliases in private user/organization configuration after checking
+`opencode models` and `opencode debug config`. Do not commit an unverified
+machine-specific provider/model ID to this portable pack. The investigator is
+an escalation role, not automatic permission to use a more expensive model or
+perform a live write. Model choice never replaces tests, receipts, allowlists,
+or review gates.
 
-For an existing authenticated Power BI setup, begin with capability discovery:
+`/validate` uses the builder role because running project tests executes code
+and may create local cache files. The verifier independently reviews the diff,
+schema-valid receipts, and test evidence without rerunning arbitrary code.
+
+## Local-model workflow
+
+When adopting the workbench—or only when the private context overlay is absent
+or stale—bootstrap it first under the approved model/data boundary:
+
+```text
+/bootstrap-finance-context <approved local artifacts and scope>
+```
+
+Normal material tasks begin by preparing a bounded context capsule:
+
+```text
+/prepare-finance-task <outcome, source/target aliases, and scope>
+```
+
+Then run one exact phase:
+
+```text
+/inventory-finance-report <task brief or artifact alias>
+/resolve-finance-semantics <task brief or unresolved rule>
+/migrate-finance-query <task brief and query alias>
+/reconcile-finance-report <task brief and baseline/candidate aliases>
+/profile-finance-refresh <task brief and time window>
+```
+
+At a pause, model switch, blocker, or phase boundary:
+
+```text
+/handoff-finance-run <task brief and current evidence aliases>
+```
+
+If company policy permits an exact internal context overlay, copy
+`context/local-context.example.json` to the ignored
+`context/local-context.json` and populate approved aliases and rules. Never
+commit that file or paste it wholesale into model context. If the resolved
+configuration uses Azure or any other remote provider, loading a selected
+`WORK_INTERNAL` field sends it to that provider. Load such fields only when the
+exact provider/model boundary is company-approved for the data class;
+otherwise require a pre-generated approved projection, an installed
+deterministic redaction adapter, or a genuinely local approved model. If none
+exists, omit private values and return `MISSING_CONTEXT` or
+`MISSING_PREREQUISITE`; never ask the model to redact raw private values.
+Missing private context blocks only conclusions or live actions that require
+it; repo-local candidates continue only when the request authorizes changes.
+
+The following Power BI and Databricks commands are **fail-closed prompt
+contracts**, not executable adapters shipped by this repository. Cloning the
+workbench does not make them technically read-only. Until an approved narrow
+adapter is installed and validated, they must return `MISSING_PREREQUISITE`
+without falling back to generic bash, raw REST, token input, or mutation-based
+permission tests.
+
+With an installed approved Power BI adapter, begin with capability discovery:
 
 ```text
 /pbi-capabilities <workspace alias and semantic-model alias>
 ```
 
-This command is read-only. It inventories the accessible target and selects
+The intended adapter contract is read-only. It inventories the accessible target and selects
 between REST, XMLA, MCP, and Desktop without taking ownership, refreshing
 permissions, triggering refresh, or testing write access by mutation. It never
 asks for or prints a bearer token.
 
-For an approved Databricks environment, begin with bounded metadata discovery:
+With an installed approved Databricks adapter, begin with bounded metadata discovery:
 
 ```text
 /dbx-capabilities profile_alias=<approved-alias> \
@@ -92,11 +181,12 @@ For an approved Databricks environment, begin with bounded metadata discovery:
   schema_alias=<approved-schema-alias>
 ```
 
-This command does not run SQL, return rows, export notebooks, start compute,
+The intended adapter contract does not run SQL, return rows, export notebooks, start compute,
 or change workspace/Unity Catalog state. It uses only the existing approved
 authenticated adapter and returns aliases, counts, and capability evidence.
 
-When an exact curated Genie Agent is approved for an investigation, use:
+When the approved adapter and an exact curated Genie Agent are both available,
+use:
 
 ```text
 /dbx-genie-probe profile_alias=<approved-alias> \
@@ -186,7 +276,6 @@ Do not turn raw chat transcripts into permanent context. Preserve only stable de
 - [OpenCode agent skills](https://opencode.ai/docs/skills/)
 - [OpenCode agent configuration](https://opencode.ai/docs/agents/)
 - [OpenCode configuration precedence](https://opencode.ai/docs/config/)
-- [GPT-5.3-Codex model capabilities](https://developers.openai.com/api/docs/models/gpt-5.3-codex)
 - [Python XML security guidance](https://docs.python.org/3/library/xml.html#xml-vulnerabilities)
 - [Azure Databricks managed MCP servers](https://learn.microsoft.com/en-us/azure/databricks/generative-ai/mcp/managed-mcp)
 - [Azure Databricks Genie Conversation API](https://learn.microsoft.com/en-us/azure/databricks/genie-agents/conversation-api)

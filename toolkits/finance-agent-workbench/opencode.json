@@ -1,22 +1,50 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "azure/gpt-5.3-codex",
   "share": "disabled",
   "subagent_depth": 1,
   "permission": {
     "skill": {
       "*": "ask",
-      "finance-data-reliability": "allow"
+      "finance-data-reliability": "allow",
+      "finance-report-migration": "allow",
+      "bootstrap-finance-context": "allow",
+      "prepare-finance-task": "allow",
+      "inventory-finance-report": "allow",
+      "resolve-finance-semantics": "allow",
+      "migrate-finance-query": "allow",
+      "reconcile-finance-report": "allow",
+      "profile-finance-refresh": "allow",
+      "capture-agent-failure": "allow",
+      "handoff-finance-run": "allow"
     },
     "external_directory": "ask"
   },
   "agent": {
-    "finance-build": {
-      "description": "Implement and validate routine PowerShell, Python, Databricks, and Power BI finance workflows",
+    "finance-scout": {
+      "description": "Classify and prepare tasks using built-in reads or approved no-state metadata adapters; repository edits and shell execution are denied",
       "mode": "primary",
-      "model": "azure/gpt-5.3-codex",
-      "reasoningEffort": "medium",
-      "textVerbosity": "low",
+      "permission": {
+        "edit": "deny",
+        "external_directory": "ask",
+        "bash": {
+          "*": "deny"
+        }
+      }
+    },
+    "finance-compute": {
+      "description": "Perform one explicitly invoked bounded external read or compute action through an approved adapter; shell and repository edits are denied",
+      "mode": "primary",
+      "permission": {
+        "edit": "deny",
+        "external_directory": "ask",
+        "bash": {
+          "*": "deny"
+        }
+      }
+    },
+    "finance-build": {
+      "description": "Implement an explicitly requested repo-local candidate and its focused tests",
+      "mode": "primary",
       "permission": {
         "edit": "ask",
         "external_directory": "ask",
@@ -25,12 +53,20 @@
         }
       }
     },
-    "finance-deep": {
-      "description": "Investigate difficult schema drift, reconciliation mismatches, metadata boundaries, and cross-system failures",
+    "finance-verifier": {
+      "description": "Independently validate a finance candidate and its evidence without editing it",
       "mode": "primary",
-      "model": "azure/gpt-5.3-codex",
-      "reasoningEffort": "high",
-      "textVerbosity": "low",
+      "permission": {
+        "edit": "deny",
+        "external_directory": "ask",
+        "bash": {
+          "*": "deny"
+        }
+      }
+    },
+    "finance-deep": {
+      "description": "Investigate one bounded semantic ambiguity or cross-system failure without receiving broader authority",
+      "mode": "primary",
       "permission": {
         "edit": "ask",
         "external_directory": "ask",
@@ -41,6 +77,11 @@
     }
   },
   "command": {
+    "bootstrap-finance-context": {
+      "description": "Create or refresh the ignored approved local context overlay without exposing or committing it",
+      "agent": "finance-build",
+      "template": "Load the bootstrap-finance-context skill. For $ARGUMENTS, read the public context catalog/example. Create or update exact WORK_INTERNAL fields only when the resolved provider/model is approved for that data class or the model is genuinely local. Otherwise require a pre-generated approved projection or installed deterministic redaction adapter; if neither exists, return MISSING_PREREQUISITE and do not load private artifacts or ask the model to redact them. Use only approved local artifacts, sanitized capability receipts, internal runbook references, and explicit operator decisions. Record provenance, effective date/snapshot, status, and review trigger for important rules. Never include credentials, tokens, authorization headers, raw rows, personal data, sensitive query text, or unrestricted platform dumps. Return coverage, stale/conflicting entries, MISSING_CONTEXT, and the smallest next evidence; do not stage or commit the private overlay."
+    },
     "validate": {
       "description": "Run the repository checks and summarize evidence",
       "agent": "finance-build",
@@ -53,18 +94,58 @@
     },
     "pbi-capabilities": {
       "description": "Inventory one Power BI workspace semantic model and choose REST, XMLA, MCP, or Desktop without mutation",
-      "agent": "finance-build",
-      "template": "Load the finance-data-reliability skill, references/power-bi-boundaries.md, and references/power-bi-premium-workspace-runbook.md. For $ARGUMENTS, perform only the read-only capability inventory using the existing approved authenticated adapter. Never request, print, persist, decode, or accept a bearer token. Return sanitized target identity, observed capacity assignment, REST, XMLA, and MCP capabilities, permission and settings evidence, recommended route, missing prerequisites, and unsupported assumptions. Do not trigger or cancel refresh, refresh permissions, take ownership, rebind a report, change schedules or parameters, commit an MCP transaction, apply service TMDL, call Fabric updateDefinition, save or deploy metadata, or modify any service object."
+      "agent": "finance-scout",
+      "template": "Load the finance-data-reliability skill, .opencode/skills/finance-data-reliability/references/power-bi-boundaries.md, and .opencode/skills/finance-data-reliability/references/power-bi-premium-workspace-runbook.md. For $ARGUMENTS, use only an installed approved read-only adapter. If it is unavailable, return MISSING_PREREQUISITE and do not fall back to generic bash, raw REST, bearer-token input, or mutation-based permission tests. The intended adapter contract is a read-only capability inventory returning sanitized target identity, observed capacity assignment, REST, XMLA, and MCP capabilities, permission/settings evidence, recommended route, missing prerequisites, and unsupported assumptions. Never request, print, persist, decode, or accept a bearer token. Do not trigger or cancel refresh, refresh permissions, take ownership, rebind a report, change schedules or parameters, commit an MCP transaction, apply service TMDL, call Fabric updateDefinition, save or deploy metadata, or modify any service object."
     },
     "dbx-capabilities": {
       "description": "Inventory bounded Databricks metadata through one approved named profile without SQL or mutation",
-      "agent": "finance-build",
-      "template": "Load the finance-data-reliability skill and references/databricks-agent-access.md. For $ARGUMENTS, use only an existing approved authenticated adapter and fixed private aliases. If the adapter, explicit named profile, allowlist, or target alias is unavailable, fail closed with MISSING_PREREQUISITE; do not install software or fall back to raw REST, a token, or an arbitrary shell command. Permit only a projected current-identity confirmation, accessible warehouse states, one bounded nonrecursive approved workspace path, and allowlisted Unity Catalog metadata. Return aliases, counts, capability booleans, versions, and sanitized error classes only. Never request, print, persist, decode, export, or accept a bearer token, PAT, profile contents, hostname, raw ID, owner, email, storage location, JDBC URL, source code, comment, query text, or row. Do not run SQL, start or stop compute, export or run a notebook, run or cancel a job, recurse from a workspace/catalog root, change grants, install packages, or modify any Databricks object."
+      "agent": "finance-scout",
+      "template": "Load the finance-data-reliability skill and .opencode/skills/finance-data-reliability/references/databricks-agent-access.md. For $ARGUMENTS, use only an existing approved authenticated adapter and fixed private aliases. If the adapter, explicit named profile, allowlist, or target alias is unavailable, fail closed with MISSING_PREREQUISITE; do not install software or fall back to raw REST, a token, or an arbitrary shell command. Permit only a projected current-identity confirmation, accessible warehouse states, one bounded nonrecursive approved workspace path, and allowlisted Unity Catalog metadata. Return aliases, counts, capability booleans, versions, and sanitized error classes only. Never request, print, persist, decode, export, or accept a bearer token, PAT, profile contents, hostname, raw ID, owner, email, storage location, JDBC URL, source code, comment, query text, or row. Do not run SQL, start or stop compute, export or run a notebook, run or cancel a job, recurse from a workspace/catalog root, change grants, install packages, or modify any Databricks object."
     },
     "dbx-genie-probe": {
       "description": "Ask one allowlisted Genie Agent question and return an explicitly unverified, bounded hypothesis package",
+      "agent": "finance-compute",
+      "template": "Load the finance-data-reliability skill, .opencode/skills/finance-data-reliability/references/databricks-agent-access.md, and .opencode/skills/finance-data-reliability/references/databricks-reconciliation.md. For $ARGUMENTS, require an installed approved adapter plus an approved profile_alias, space_alias, question_template, deadline, poll bound, result row/byte caps, and optional deterministic check_id. If the adapter is unavailable, return MISSING_PREREQUISITE; do not improvise raw REST or generic shell access. This invocation authorizes one task-scoped Genie interaction, conversation state, and its associated read query/warehouse compute only; disclose those side effects before execution. Resolve raw workspace/space/message IDs inside the approved adapter, start a new task conversation, poll the same message with bounded backoff, and return only aliases, terminal state, elapsed time, generated-SQL hash, trusted-asset indicator, truncation flag, approved source aliases, and the required check. Never return or accept tokens, raw IDs/hosts, prompts, instructions, generated SQL text, rows, signed links, other users' conversations, or full attachments. Do not use the broad Databricks SQL MCP for verification, delete or update Genie state, mutate workspace/catalog/data, retry a lost POST blindly, or claim VERIFIED. The terminal conclusion must remain UNVERIFIED_HYPOTHESIS until a separate deterministic reconciliation passes."
+    },
+    "prepare-finance-task": {
+      "description": "Build a bounded task brief and load the smallest complete finance context slice",
+      "agent": "finance-scout",
+      "template": "Load the prepare-finance-task skill. For $ARGUMENTS, read context/catalog.json, any compatible fresh handoff, and only the references routed for the classified workflow. Load required local-context fields only when approved for the resolved provider/model. Otherwise use a pre-generated approved projection or installed deterministic redaction adapter; if neither exists, omit private context and mark dependent decisions MISSING_CONTEXT/MISSING_PREREQUISITE. Never ask the model to redact raw private values. Produce a task brief conforming to schemas/task-brief.schema.json with facts/evidence, unknowns, semantic rules, allowed effects, prohibitions, selected context hashes, tool budget, required proof, highest_permitted_gate, and next safe step. Ask only for a missing fact that changes transformation, target, authorization, or acceptance. Perform no SQL, refresh, compute start, publication, schedule change, or live write."
+    },
+    "inventory-finance-report": {
+      "description": "Inventory a finance report, source logic, semantic model, visuals, and operations without rewriting it",
+      "agent": "finance-scout",
+      "template": "Load the inventory-finance-report and finance-data-reliability skills. For $ARGUMENTS, create or reuse the task brief, fingerprint exact artifacts, and produce an inventory conforming to schemas/report-inventory.schema.json covering sources, M/helper/sample-file logic, parameters, DAX, calculated objects, relationships, roles, report pages/visuals/filters/bookmarks, refresh behavior, dependencies, and missing artifacts. Stay read-only, label every artifact and material claim observed/inferred/unknown/blocked in the evidence map, and do not begin migration code during inventory."
+    },
+    "resolve-finance-semantics": {
+      "description": "Resolve grain, hierarchy, ledger, sign, FX, null, markup, and tolerance rules before migration",
+      "agent": "finance-deep",
+      "template": "Load the resolve-finance-semantics skill. For $ARGUMENTS, use the task brief, inventory, artifacts, and approved local context to build a contract conforming to schemas/finance-semantic-contract.schema.json. Prove keys/cardinality where possible and distinguish legacy behavior, approved rule, intentional correction, and MISSING_CONTEXT. Never infer a material finance rule from a name, sample total, or industry convention, and do not write dependent transformation logic while grain, hierarchy, ledger, currency, sign, date, or null behavior remains unresolved."
+    },
+    "migrate-finance-query": {
+      "description": "Create a tested local candidate translating Power Query or export logic to governed SQL, Python, or revised M",
       "agent": "finance-build",
-      "template": "Load the finance-data-reliability skill, references/databricks-agent-access.md, and references/databricks-reconciliation.md. For $ARGUMENTS, require an approved profile_alias, space_alias, question_template, deadline, poll bound, result row/byte caps, and optional deterministic check_id. This invocation authorizes one task-scoped Genie interaction, conversation state, and its associated read query/warehouse compute only; disclose those side effects before execution. Resolve raw workspace/space/message IDs privately, start a new task conversation, poll the same message with bounded backoff, and return only aliases, terminal state, elapsed time, generated-SQL hash, trusted-asset indicator, truncation flag, approved source aliases, and the required check. Never return or accept tokens, raw IDs/hosts, prompts, instructions, generated SQL text, rows, signed links, other users' conversations, or full attachments. Do not use the broad Databricks SQL MCP for verification, delete or update Genie state, mutate workspace/catalog/data, retry a lost POST blindly, or claim VERIFIED. The terminal conclusion must remain UNVERIFIED_HYPOTHESIS until a separate deterministic reconciliation passes."
+      "template": "Load the migrate-finance-query and finance-data-reliability skills. For $ARGUMENTS, require the relevant inventory and an approved, evidenced semantic contract for every rule used by executable logic; otherwise produce only a mapping/non-executable skeleton with MISSING_CONTEXT. Map every transformation step and helper dependency, preserve grain/types/precision/locale/encoding/null/sign/date/source identity/join cardinality, and produce the smallest authorized local candidate with structural, row/key, grouped-total, exception, and negative-fixture tests. Separate optimization from business-logic changes and stop before any governed write or deployment."
+    },
+    "reconcile-finance-report": {
+      "description": "Reconcile baseline and candidate data, model, report, and operational behavior in evidence-backed layers",
+      "agent": "finance-verifier",
+      "template": "Load the reconcile-finance-report skill and every routed reliability reference. For $ARGUMENTS, use supplied artifacts, deterministic receipts, and already approved bounded results. If fresh query/refresh/Genie/warehouse compute is required, return MISSING_PREREQUISITE and require a separately invoked finance-compute action with disclosed bounds; do not improvise shell or broad tools. Require aligned snapshots and semantics, then compare structure, rows/keys/duplicates/nulls, global and grouped totals, currency/sign/components, key-level exceptions, DAX/filter context, report behavior, and operations. Produce explicit exception buckets and classify causes before changing logic. Return VERIFIED, FAILED, or INCONCLUSIVE with claims linked to deterministic evidence; Genie or model narrative cannot override a failed invariant."
+    },
+    "profile-finance-refresh": {
+      "description": "Separate Power BI capacity, gateway, source, SQL, and model-processing delays and propose a safe refresh plan",
+      "agent": "finance-deep",
+      "template": "Load the profile-finance-refresh skill and relevant Power BI/Databricks references. For $ARGUMENTS, use bounded read-only telemetry over a representative window, normalize time zones, and distinguish Fabric/Power BI capacity queueing, gateway/network/authentication, Power Query/data acquisition, Databricks warehouse/SQL/result fetch, and semantic-model processing. Return a baseline, classification/confidence, schedule or architecture proposal, expected benefit, rollback, and observation window. Do not change schedules, refresh, warehouses, jobs, queries, or partitions."
+    },
+    "capture-agent-failure": {
+      "description": "Propose a sanitized failure case, or codify it only when explicitly requested",
+      "agent": "finance-deep",
+      "template": "Load the capture-agent-failure skill. For $ARGUMENTS, create a proposed sanitized case conforming to schemas/failure-case.schema.json with the smallest symptom, exact class, stage, runtime, violated invariant, discriminating evidence, planned fixture, and deterministic expected result. For diagnosis/review scope, stop with the proposal and do not edit. Only when the user explicitly asks to capture, codify, remediate, or add regression coverage may you create the fixture and update the narrowest guidance/test. Evaluate a cheaper model only when a verified private model binding and deterministic eval runner exist; otherwise return an eval plan plus MISSING_PREREQUISITE. Do not commit raw work data, identifiers, prompts, logs, or credentials, and do not let a model grader override assertions."
+    },
+    "handoff-finance-run": {
+      "description": "Create an evidence-linked resumable handoff for another local model",
+      "agent": "finance-scout",
+      "template": "Load the handoff-finance-run skill. For $ARGUMENTS, emit a handoff conforming to schemas/run-handoff.schema.json with task/context/artifact hashes, tool versions/hashes, completed stages, last verified boundary, claims and evidence, checks, candidate state, unresolved discrepancies, blockers, external operation IDs, highest permitted gate, uncommitted/live state, next permitted step, and exact resume instruction. Use aliases in portable output and never require the next model to reconstruct the chat."
     }
   }
 }
