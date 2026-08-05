@@ -50,6 +50,11 @@
       "description": "Classify a failed spool or reconciliation run",
       "agent": "finance-deep",
       "template": "Load the finance-data-reliability skill and its failure taxonomy. Diagnose $ARGUMENTS from receipts and sanitized logs. Separate evidence from inference, classify retryability, and propose the smallest safe next action. Do not modify source data or production systems."
+    },
+    "pbi-capabilities": {
+      "description": "Inventory one Power BI workspace semantic model and choose REST, XMLA, MCP, or Desktop without mutation",
+      "agent": "finance-build",
+      "template": "Load the finance-data-reliability skill, references/power-bi-boundaries.md, and references/power-bi-premium-workspace-runbook.md. For $ARGUMENTS, perform only the read-only capability inventory using the existing approved authenticated adapter. Never request, print, persist, decode, or accept a bearer token. Return sanitized target identity, observed capacity assignment, REST, XMLA, and MCP capabilities, permission and settings evidence, recommended route, missing prerequisites, and unsupported assumptions. Do not trigger or cancel refresh, refresh permissions, take ownership, rebind a report, change schedules or parameters, commit an MCP transaction, apply service TMDL, call Fabric updateDefinition, save or deploy metadata, or modify any service object."
     }
   }
 }

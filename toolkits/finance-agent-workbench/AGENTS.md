@@ -62,6 +62,8 @@ file.
 - A heartbeat proves only that the attached supervisor observed the direct
   child had not exited at that instant. It does not prove bytes, rows, or
   business work are progressing. Treat it as liveness evidence only.
+- A local heartbeat also does not prove a Power BI service refresh is making
+  progress. Only polling the exact service request ID establishes its state.
 - `runwatch` cannot extend a hard host timeout or make a child durable. If the
   expected duration may exceed the host limit, use the approved external
   terminal or job runner and return its receipt.
@@ -75,21 +77,24 @@ file.
 
 ## Skill routing
 
-For file staging, XML inspection, Databricks reconciliation, or Power BI external-tool work, read `.opencode/skills/finance-data-reliability/SKILL.md` and every reference it routes for the task. When more than one trigger matches, load all matching references. The large-XML/SMB runbook is mandatory before retrying a failed or timed-out remote content operation.
+For file staging, XML inspection, Databricks reconciliation, or Power BI work, read `.opencode/skills/finance-data-reliability/SKILL.md` and every reference it routes for the task. When more than one trigger matches, load all matching references. The large-XML/SMB runbook is mandatory before retrying a failed or timed-out remote content operation. The Premium-workspace runbook is mandatory for Power BI REST, Fabric REST, XMLA, service-side Tabular Editor or TMDL View, Power BI MCP, published-model, enhanced-refresh, refresh-history, or expiring-token work.
 
 ## Change gates
 
 - **Read-only:** Inspect files, metadata, schemas, query results, logs, and generated receipts. Proceed when within the user's stated scope.
 - **Candidate change:** Produce a patch, script, dry run, or local generated artifact. Do not apply it to a live model or remote system.
 - **Controlled write:** Require explicit authorization, an exact target, a backup or rollback path, and validation before writing to a semantic model, remote share, Databricks object, schedule, or shared configuration.
-- **High-impact write:** Require a separate explicit confirmation before publish, overwrite, delete, table/schema/job/security changes, or any production-wide operation. Stop if the target is ambiguous.
+- **High-impact write:** Require a separate explicit confirmation before publish, overwrite, delete, whole-definition replacement, ownership takeover, permission/gateway/security changes, broad refresh or cancellation, table/schema/job changes, or any production-wide operation. Stop if the target is ambiguous.
 
 ## Power BI boundaries
 
 - Treat DAX Studio as a query, inspection, test, and performance-analysis tool; do not present it as a PBIX or Power Query editor.
-- Treat Tabular Editor 2 as a TOM semantic-model metadata editor. It does not validate the model while edits are being authored.
-- Power BI Desktop releases from June 2025 onward support all TOM metadata write operations, but external processing commands remain forbidden.
-- Tabular Editor 2 can write an M partition expression as metadata, but it cannot execute or validate Power Query M or schema-check an M partition. Validate M through Power BI Desktop or another supported Power Query host.
+- Use Power BI REST or the remote query MCP for supported discovery, refresh orchestration, history, and bounded query operations. Use XMLA/TOM through Tabular Editor 2 or the local Modeling MCP for published semantic-model metadata. Use Desktop/PBIP for report pages, visuals, layout, and local Power Query authoring.
+- Treat Tabular Editor 2 as a TOM semantic-model metadata editor. A save to a service model opened through XMLA is an immediate live shared-model write, not a local candidate waiting for publish.
+- External processing commands remain unsupported against a model loaded in Power BI Desktop. Do not generalize that Desktop restriction to a capacity-backed service model: authorized service XMLA/TOM/TMSL and enhanced REST refresh can process published semantic models.
+- Build supports external query/read scenarios; model Write is required for XMLA metadata mutation and is normally inherited by workspace Contributor, Member, and Admin roles. Neither proves OAuth scope, tenant settings, capacity XMLA Read Write, ownership, gateway access, or model compatibility.
+- Tabular Editor 2 can write an M partition expression as metadata, but it cannot execute or validate Power Query M or schema-check the evaluated partition. Validate M in Desktop/test before promotion or through a separately authorized service refresh using the service credentials and gateway.
+- Preserve the original PBIX and a private canonical metadata baseline before the first XMLA write to a Desktop-authored published model. An XMLA write can make that semantic model unavailable for PBIX download.
 
 ## Evidence and reporting
 

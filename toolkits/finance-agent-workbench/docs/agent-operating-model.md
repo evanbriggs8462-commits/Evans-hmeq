@@ -13,8 +13,9 @@ Use the model to plan, classify, and orchestrate; use deterministic code and ind
 | Python | Stream-parse local semi-structured data, normalize types under an explicit contract, and produce bounded summaries | Do not load unbounded exports into memory or logs |
 | Databricks SQL | Read the governed target and calculate reproducible comparison evidence | Read-only unless a separate write is expressly authorized |
 | DAX Studio | Query, inspect, test, and analyze DAX/model behavior | Not a PBIX or Power Query editor |
-| Tabular Editor 2/TOM | Inspect and edit supported semantic-model metadata | Metadata writes do not prove validity, M execution, refresh, save, or publish |
-| Power BI Desktop/service | Evaluate Power Query, perform supported refresh/processing, save, and publish through supported workflows | Live artifact operations require explicit gates and postcondition checks |
+| Power BI REST/remote query MCP | Discover accessible service objects, inspect operations, execute bounded queries, and orchestrate supported refreshes | Not a general semantic-model metadata editor; each endpoint has distinct scope, role, owner, and model limits |
+| Power BI service XMLA/Tabular Editor 2/local Modeling MCP | Inspect and edit published semantic-model metadata and perform authorized service processing | A connected save is an immediate live write; metadata persistence does not prove M, data, DAX, or report behavior |
+| Power BI Desktop/PBIP | Author report pages and local Power Query/model artifacts; evaluate local M through supported workflows | External processing commands against a Desktop-loaded model are unsupported; publish/republish is a separate shared overwrite |
 
 ## Decision gates
 
@@ -73,6 +74,9 @@ Use a separate confirmation for publish, overwrite, delete, refresh with broad o
 ## Validation pipeline
 
 Use the pipeline in order. Preserve the receipt at each boundary so a later failure does not erase earlier evidence.
+Apply only the relevant branch: source-stability, transport, and XML steps are
+for file-ingestion work, while a pure Power BI service task proceeds from
+environment/target proof to its API, metadata, processing, and behavior gates.
 
 1. **Intent contract** — Define desired outcome, invariants, scope, grain, time window, tolerances, and prohibited operations.
 2. **Environment proof** — Record effective non-secret configuration, executable/tool versions, permissions, target identity, architecture, and runtime limits.
@@ -84,9 +88,10 @@ Use the pipeline in order. Preserve the receipt at each boundary so a later fail
 8. **Reconciliation proof** — Compare shape, global totals, grouped totals, duplicates/nulls, and finally bounded key-level exceptions.
 9. **Candidate proof** — Produce a minimal diff and show that offline/static tests pass. Keep limitations explicit.
 10. **Mutation proof** — After authorization, apply the bounded change, reconnect/reread, and compare persisted state with the candidate.
-11. **Behavioral proof** — Execute independent assertions in the supported host. For M, evaluate and refresh through Power BI Desktop or another supported Power Query host; a TOM write is insufficient.
-12. **Artifact proof** — Reopen the saved artifact and repeat critical assertions before publish or replacement.
-13. **Receipt and disposition** — Mark the run passed, failed, or inconclusive; record warnings, remaining hypotheses, outputs, and rollback status.
+11. **Behavioral proof** — Execute independent assertions in the supported host. For M, evaluate in Desktop/test before promotion or through a separately authorized refresh of the exact service model; a TOM write is insufficient.
+12. **Service-operation proof** — For asynchronous work, persist the request ID, poll to a terminal state after any token renewal, inspect object-level results, and require postconditions. `202 Accepted` is not success.
+13. **Artifact proof** — Reconnect to the service or reopen the saved artifact and repeat critical assertions before deployment, publish, or replacement.
+14. **Receipt and disposition** — Mark the run passed, failed, or inconclusive; record warnings, remaining hypotheses, outputs, and rollback status.
 
 ## Evidence receipts
 
@@ -132,14 +137,16 @@ The agent may generate an exploratory command to learn a bounded fact. Once the 
 
 ## Power BI-specific control
 
-Keep four claims distinct:
+Keep six claims distinct:
 
-1. **Metadata was accepted:** the TOM write returned successfully.
+1. **API request was accepted:** a REST/XMLA/MCP call returned without a transport failure.
 2. **Metadata persisted:** reconnecting shows the intended canonical diff.
-3. **Model behavior is valid:** DAX assertions and dependency checks pass.
-4. **Data acquisition is valid:** Power Query evaluates and the expected schema/data checks pass in a supported host.
+3. **Processing completed:** a refresh/process request reached a successful terminal state for every intended object.
+4. **Data acquisition is valid:** Power Query evaluated with the intended service credentials/gateway and expected schema/data checks passed.
+5. **Model behavior is valid:** DAX assertions and dependency checks passed.
+6. **Recovery remains valid:** the private source of truth, original PBIX/PBIP when applicable, and rollback artifact are usable.
 
-Power BI Desktop from June 2025 supports all TOM metadata write operations, while external processing commands remain forbidden. Tabular Editor 2 can store M partition expressions but cannot execute or validate M or schema-check the evaluated partition. Therefore, never collapse these four claims into “the report is fixed.”
+External processing commands are unsupported against a model loaded in Power BI Desktop; authorized capacity-backed service processing through XMLA/TMSL or enhanced REST is a different boundary. Tabular Editor 2 can store M partition expressions but cannot execute or validate M or schema-check the evaluated partition. A Tabular Editor save to a service XMLA model is already a live write, not a later publish candidate. Therefore, never collapse these six claims into “the report is fixed.”
 
 ## Reconciliation-specific control
 

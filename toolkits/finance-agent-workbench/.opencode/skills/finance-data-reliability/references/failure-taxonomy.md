@@ -12,6 +12,19 @@ Diagnose the failing layer before changing code. Capture the stage, UTC time, el
 6. Prove record/schema/date/amount semantics.
 7. Reconcile the parsed result against a frozen target snapshot.
 
+For a Power BI service incident, use this separate order instead of forcing the
+file pipeline onto the problem:
+
+1. Prove the authenticated identity source without exposing the token.
+2. Prove the exact sanitized workspace/model target and model category.
+3. Classify REST, Fabric REST, XMLA, remote MCP, local Modeling MCP, or Desktop.
+4. Inspect OAuth scope, workspace/item role, ownership, tenant setting, and
+   effective capacity XMLA setting independently.
+5. For an accepted asynchronous request, recover its request ID and poll the
+   same operation before considering a retry.
+6. Separate transport acceptance, metadata persistence, processing, M/data
+   acquisition, DAX behavior, and rollback evidence.
+
 Retry only after classifying a failure as transient. Use bounded attempts with backoff and jitter. Repeating the same deterministic failure produces noise, not evidence.
 
 ## Common failure classes
@@ -41,7 +54,20 @@ Retry only after classifying a failure as transient. Use bounded attempts with b
 | Dates or amounts silently disagree | Locale-dependent parsing, timezone conversion, fiscal cutoffs, decimal scale, currency, signs, rounding, or blank/zero coercion | Parse with explicit formats and decimal types; retain parse-failure counts; reconcile using a written contract |
 | A retry duplicates output | Non-idempotent staging or append behavior, reused run directory, or missing manifest | Use unique run IDs, immutable finalized inputs, atomic output replacement, and content fingerprints; never append implicitly |
 | Databricks totals vary between runs | Different snapshots, late data, nondeterministic filters, cache assumptions, or mutable reference tables | Pin or record the available snapshot/version/time and rerun the same query contract; then use the Databricks reference |
-| Power BI metadata write “succeeds” but model fails later | No round-trip check, unresolved dependency, M was stored but not evaluated, or external processing was assumed | Reconnect and diff TOM metadata; run DAX assertions; validate M/refresh in Power BI Desktop; use the Power BI reference |
+| Power BI metadata write “succeeds” but model fails later | No round-trip check, unresolved dependency, M was stored but not evaluated, or metadata acceptance was mistaken for processing | Reconnect and diff TOM metadata; run DAX assertions; validate M in Desktop/test or with an authorized targeted service refresh; use both Power BI references |
+| REST returns `401` while polling | The current access token is absent, expired, or revoked; the server-side operation might still be running | Reauthenticate through the approved broker and resume polling the same request ID; never repeat an accepted POST merely because the polling token expired |
+| REST returns `403` | Scope, workspace/item role, ownership, tenant/capacity setting, gateway authority, or model category does not permit the operation | Inspect the exact gate and stop; token refresh and retries do not create permission |
+| A refresh POST returns `202 Accepted` and the agent reports success | Acceptance was mistaken for terminal completion | Persist the request ID/Location, poll to a terminal state, inspect per-object results, and run independent postconditions |
+| A refresh POST returns `400` while another refresh is active | Power BI permits only one refresh operation per semantic model | Inspect and monitor the existing refresh; do not create a retry loop or submit competing requests |
+| The access token expires during enhanced refresh | Client authentication expired after the service accepted the work | Reacquire authentication only for polling; the service operation continues unless it independently fails or is cancelled |
+| XMLA discovery works but Tabular Editor save fails | Build/read connectivity was mistaken for model Write, or the capacity endpoint is not Read Write | Inspect model permission, tenant integration, effective capacity setting, ownership restrictions, and supported model category; do not test with another mutation |
+| M metadata persists but service refresh fails | Stored M text did not prove syntax, schema, privacy, credentials, gateway, source availability, or policy behavior | Keep metadata and data claims separate; classify the sanitized service error; validate/repair in test or roll back the object-scoped change |
+| PBIX download becomes unavailable after an XMLA write | Documented consequence for a Desktop-authored service model, not a transient download error | Use the retained original PBIX/PBIP and private TMDL source; do not seek a permission workaround |
+| Newly granted access is missing from ordinary API results | Permission propagation might be delayed | With explicit authorization, call `RefreshUserPermissions` at most once, wait about two minutes, and retry the read; it is not a general workspace reset |
+| Power BI/Fabric REST returns `429` | Request-rate or capacity throttling | Honor `Retry-After`, classify rate versus capacity pressure, and use only a bounded retry; immediate repetition cannot fix overloaded capacity |
+| Fabric definition call returns `202` with no body | Long-running operation was accepted, not completed | Capture exact `Location`/operation ID privately, wait for `Retry-After`, poll terminal state, and retrieve a result only after success |
+| JSON DAX returns HTTP 200 with nested error or truncation | Transport succeeded but the result is invalid/limited | Fail the assertion, discard partial data, and correct/bound the query |
+| Arrow DAX returns HTTP 200 with `IsError=true` | Query or permission failure is encoded in Arrow schema metadata | Inspect every concatenated stream, fail the assertion, and retain only sanitized fault classification |
 
 ## PowerShell reliability rules
 

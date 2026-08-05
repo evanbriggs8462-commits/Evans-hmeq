@@ -25,11 +25,18 @@ For long commands that fit inside the host limit, see
 It explains the difference between elapsed time, liveness, real progress, and
 durable execution.
 
+For service-side semantic-model work, use
+[Power BI Premium workspace operations](.opencode/skills/finance-data-reliability/references/power-bi-premium-workspace-runbook.md).
+It separates ordinary Power BI REST, Fabric REST, XMLA/TOM, Tabular Editor,
+TMDL, Desktop, and the two Microsoft Power BI MCP servers. It also documents
+permission gates, token renewal, targeted asynchronous refresh, M validation,
+PBIX consequences, rollback, and sanitized receipts.
+
 ## Safe adoption
 
 1. Put this repository on a company-approved private Git host before adding any internal knowledge.
 2. Keep credentials, real UNC paths, SAP exports, screenshots, PBIX files, proprietary schemas, hierarchy maps, and client identifiers out of Git.
-3. Open the repository root in OpenCode. It discovers `AGENTS.md` and the project skill automatically. Large XML, UNC, SMB, VPN, OneDrive, killed-process, and timeout triggers route the agent to the mandatory large-file runbook before it issues another content-read or copy command.
+3. Open the repository root in OpenCode. It discovers `AGENTS.md` and the project skill automatically. Large XML, UNC, SMB, VPN, OneDrive, killed-process, and timeout triggers route to the mandatory large-file runbook. Premium/Fabric workspace, REST, XMLA, MCP, service TMDL, enhanced-refresh, and token triggers route to the Power BI runbook before tool selection.
 4. Merge `opencode.json` into any existing project configuration; do not overwrite provider, MCP, or organization-managed settings blindly.
 5. Start with anonymized fixtures and a read-only shadow run. Promote a workflow only after its receipts and reconciliation results match the established process.
 
@@ -49,6 +56,17 @@ For an existing report repository, copy or submodule the `.opencode/skills/finan
 - `finance-deep`: high reasoning for schema drift, unexplained reconciliation differences, or cross-system failures.
 
 Build/Plan controls tool permissions. It is separate from reasoning effort. Do not use high or xhigh reasoning as a substitute for tests, receipts, allowlists, or review gates.
+
+For an existing authenticated Power BI setup, begin with capability discovery:
+
+```text
+/pbi-capabilities <workspace alias and semantic-model alias>
+```
+
+This command is read-only. It inventories the accessible target and selects
+between REST, XMLA, MCP, and Desktop without taking ownership, refreshing
+permissions, triggering refresh, or testing write access by mutation. It never
+asks for or prints a bearer token.
 
 ## Validation
 
@@ -104,7 +122,12 @@ Default XML safety limits are 8 MiB of retained text per row, 10,000 values per 
 
 ## Current validation status
 
-The Python suite and repository-contract tests must pass in the adoption environment, including the outside-row memory regression and the large-XML runbook routing contract. The OpenCode JSON and skill structure also receive static validation. Windows PowerShell 5.1, Pester, `robocopy`, VPN, and SMB are not available in every build environment, so the PowerShell platform check must be performed on the intended workstation before production adoption. Run `Invoke-Pester` there and perform a bounded integration test with an anonymized XML file on an approved share. Also exercise `runwatch` with redirected output, Ctrl+C/CTRL+Break, a briefly locked status file, rejected mapped/sync paths, and `$LASTEXITCODE`. A mocked test does not prove real Windows console, SMB resume, timestamp, antivirus, or rename behavior.
+The Python suite and repository-contract tests must pass in the adoption environment, including the outside-row memory regression and both runbook-routing contracts. The OpenCode JSON and skill structure also receive static validation. Windows PowerShell 5.1, Pester, `robocopy`, VPN, and SMB are not available in every build environment, so the PowerShell platform check must be performed on the intended workstation before production adoption. Run `Invoke-Pester` there and perform a bounded integration test with an anonymized XML file on an approved share. Also exercise `runwatch` with redirected output, Ctrl+C/CTRL+Break, a briefly locked status file, rejected mapped/sync paths, and `$LASTEXITCODE`. A mocked test does not prove real Windows console, SMB resume, timestamp, antivirus, or rename behavior.
+
+No public build validates a live tenant, capacity assignment, REST scope, XMLA
+setting, MCP schema, Tabular Editor edition, gateway, or service refresh. Run
+the read-only capability inventory in the approved work environment before
+using any live-write instruction.
 
 ## Maintenance rule
 
