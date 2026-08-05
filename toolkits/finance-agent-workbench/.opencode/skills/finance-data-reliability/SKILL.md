@@ -1,6 +1,6 @@
 ---
 name: finance-data-reliability
-description: Build and troubleshoot reliable finance-data workflows involving large XML or spool exports, PowerShell file-share staging, Python streaming inspection, Databricks read-only reconciliation, and Power BI external tools and service APIs. Use for ingestion, parsing, reconciliation, migration, validation, or automation tasks, and for failures involving VPN or UNC access, killed or timed-out child processes, partial files, XML or schema drift, DAX Studio, Tabular Editor 2, TOM, M partitions, PBIX semantic models, Power BI REST API, Premium or Fabric workspaces, XMLA endpoints, Power BI MCP, workspace or semantic-model IDs, refresh history, enhanced refresh, access-token expiry, 401 or 403 responses, or Databricks differences.
+description: Build and troubleshoot reliable finance-data workflows involving large XML or spool exports, PowerShell file-share staging, Python streaming inspection, Databricks OAuth, SDK, CLI, Genie and Unity Catalog access, read-only reconciliation, and Power BI semantic-model and PBIR report authoring. Use for ingestion, parsing, reconciliation, migration, validation, API or MCP access, visual authoring, or automation tasks, and for failures involving VPN or UNC access, killed or timed-out child processes, partial files, XML or schema drift, DAX Studio, Tabular Editor 2, TOM, M partitions, PBIX/PBIP/PBIR reports, Power BI REST API, Premium or Fabric workspaces, XMLA endpoints, Power BI MCP, Databricks MCP, Genie Agents, workspace or model IDs, refresh history, enhanced refresh, access-token expiry, 401 or 403 responses, or reconciliation differences.
 ---
 
 # Finance Data Reliability
@@ -12,8 +12,10 @@ Act as an orchestrator. Convert recurring work into deterministic, versioned wra
 - If the task mentions **large XML, SAP spool exports, file sizes in gigabytes, UNC or mapped-drive sources, VPN/SMB, OneDrive staging, `Get-Content`, `read_bytes`, `ReadAllBytes`, regex XML inspection, bounded prefix reads, child-process termination, or an interactive shell timeout**, read [references/large-xml-smb-runbook.md](references/large-xml-smb-runbook.md) before issuing another content-read or copy command.
 - If the task mentions a **long-running or quiet command, elapsed timer, heartbeat, no output, frozen/stuck/broken session, status polling, or process liveness**, read [long-running task observability](../../../docs/long-running-task-observability.md) before selecting an execution method.
 - If the task mentions a **Premium/Fabric workspace, Power BI REST API, Fabric REST, workspace or semantic-model IDs, XMLA endpoint, Power BI MCP, service TMDL View, `getDefinition`/`updateDefinition`, refresh history, enhanced refresh, expiring access token, 401/403 response, service-side Tabular Editor work, or editing a published semantic model**, read [references/power-bi-premium-workspace-runbook.md](references/power-bi-premium-workspace-runbook.md) and [references/power-bi-boundaries.md](references/power-bi-boundaries.md) before selecting a tool or issuing a request.
+- If the task mentions **report pages, visuals, blank canvas space, slicers, filters, bookmarks, formatting, themes, PBIP/PBIR, Report Authoring/Design/Planner/Management skills, the Desktop Bridge, report `getDefinition?format=PBIR`, or report `updateDefinition`**, read [references/power-bi-report-authoring.md](references/power-bi-report-authoring.md) before editing a report definition or proposing publication.
 - If the task mentions **DAX Studio, Tabular Editor 2/TE2, TOM, PBIX, Power BI Desktop, semantic models, measures, relationships, M partitions, refresh, processing, save, or publish**, read [references/power-bi-boundaries.md](references/power-bi-boundaries.md) before proposing commands or changes.
-- If the task mentions **Databricks, Unity Catalog, SQL warehouses, Delta tables, reconciliation, row counts, balances, dates, currency, grain, keys, or source-to-target comparisons**, read [references/databricks-reconciliation.md](references/databricks-reconciliation.md) before writing SQL or judging a mismatch.
+- If the task mentions **Databricks authentication, OAuth U2M/M2M, PATs, CLI profiles, the Python SDK, current user, SQL warehouses, workspace notebooks, Unity Catalog discovery, Genie Agents/Spaces, Genie Conversation API, Databricks MCP, or an OpenCode connection to Databricks**, read [references/databricks-agent-access.md](references/databricks-agent-access.md) before probing access or selecting an interface.
+- If the task mentions **Databricks, Unity Catalog, SQL warehouses, Delta tables, reconciliation, row counts, balances, dates, currency, grain, keys, or source-to-target comparisons**, read [references/databricks-reconciliation.md](references/databricks-reconciliation.md) before writing SQL or judging a mismatch. Load both Databricks references when access and business validation are involved.
 - If the task mentions **VPN, UNC or network shares, PowerShell failures, killed children, timeouts, locks, partial copies, XML parse errors, encoding, memory, schema drift, retries, or intermittent behavior**, read [references/failure-taxonomy.md](references/failure-taxonomy.md) before retrying or patching.
 - Load every matching reference when the task crosses boundaries.
 
@@ -21,8 +23,8 @@ Act as an orchestrator. Convert recurring work into deterministic, versioned wra
 
 Apply only the branches relevant to the task. Steps about source stability,
 staging, and XML parsing apply to remote-file inputs; a pure Power BI
-REST/XMLA task begins with capability/target proof and must not invent a file
-transfer.
+REST/XMLA or Databricks API task begins with capability/target proof and must
+not invent a file transfer.
 
 1. Define the source, target, expected grain, date range, measures, tolerances, and success evidence. State unresolved assumptions.
 2. Inspect effective configuration, permissions, tool versions, and target identity without exposing credentials.

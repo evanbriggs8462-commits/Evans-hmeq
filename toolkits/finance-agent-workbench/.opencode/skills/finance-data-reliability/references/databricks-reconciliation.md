@@ -2,6 +2,11 @@
 
 Treat reconciliation as an evidence problem, not a query-generation contest. Freeze the comparison contract before deciding that either system is wrong.
 
+Before authenticating, inventorying a workspace, selecting CLI/SDK/MCP, or
+calling Genie, read [Databricks agent access](databricks-agent-access.md).
+That reference governs identity, allowlists, compute/query side effects, and
+the boundary between a Genie hypothesis and deterministic validation.
+
 ## Read-only boundary
 
 Default to metadata reads, `SELECT`, and explain/query-history operations permitted by the environment. Do not run `CREATE`, `REPLACE`, `INSERT`, `UPDATE`, `DELETE`, `MERGE`, `COPY INTO`, `OPTIMIZE`, `VACUUM`, grants, job changes, schedule changes, or cluster/warehouse changes without an exact authorized target and the controlled-write gate.
@@ -74,4 +79,3 @@ Record:
 - observed failure class, remaining hypotheses, warnings, and final status.
 
 Mark the run **failed** when an invariant breaks, **inconclusive** when snapshots or rules cannot be aligned, and **passed** only when all declared checks meet their tolerances.
-

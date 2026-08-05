@@ -7,6 +7,8 @@
 - Raw or sampled SAP/PeopleSoft/LongView/Databricks records unless explicitly approved and irreversibly anonymized.
 - PBIX/PBIT files, screenshots, query results, XML exports, Parquet output, manifests containing real paths, or model conversation payloads.
 - Model.bim, TMDL/TMSL exports, M, DAX, RLS/OLS definitions, raw `serviceExceptionJson`, MCP payloads, or Fabric definition parts from a real model. These can expose hosts, schemas, paths, business logic, roles, and organizational metadata even when credentials are service-managed.
+- Databricks profile files or token caches, workspace hosts, user identities, account/workspace/object IDs, real Unity Catalog names, storage locations, JDBC URLs, notebook source, query history, signed result URLs, Genie instructions, transcripts, attachments, generated SQL, or query results.
+- Real PBIP/PBIR projects, `.Report` or `.SemanticModel` folders, report definitions, embedded filter/slicer selections, sensitivity information, semantic bindings, custom themes/images, or rendered screenshots. Source-control-oriented format does not make report metadata public-safe.
 - Proprietary chart-of-account, profit-center, product, customer, or organizational hierarchies outside a company-owned repository.
 
 ## Authority boundaries
@@ -14,20 +16,33 @@
 - Read-only inspection is the default.
 - Source exports are never renamed, moved, or deleted by the agent workflow.
 - Databricks reconciliation uses parameterized, allowlisted `SELECT` templates against a pinned snapshot where possible.
+- Databricks authentication uses one explicit approved profile. Metadata visibility is intersected with a private allowlist; it is not treated as organizational approval. Genie interaction, SQL execution, warehouse compute, job execution, and workspace/catalog mutation are distinct authorities.
 - Power BI/TE2 metadata writes require a backup, diff, validation, and explicit live-write gate. Deployment or publish requires a separate promotion/high-impact gate.
 - Processing, refresh, publish, catalog writes, Git push, and cleanup are separate operations requiring their own authority.
 - A Tabular Editor save, local Modeling MCP commit, or service TMDL Apply against a published XMLA model is a live write. It is never a read-only permission test.
 - Power BI ownership takeover, permission refresh, gateway binding, schedule/parameter changes, refresh/cancel, report rebind, and whole-definition replacement each require exact separate authority.
+- PBIR retrieval and local candidate editing do not authorize report publication. Fabric report `updateDefinition` is a high-impact whole-definition replacement with a separate baseline, diff, concurrency, rollback, LRO, and postcondition gate.
 
 ## Logging
 
 Prefer aliases over physical endpoints and paths. Workspace, semantic-model, report, capacity, gateway, and request GUIDs are internal identifiers: exact values may appear only in the live target-confirmation surface, while stored/public receipts use aliases or environment-scoped fingerprints. Receipts may include hashes, sizes, timestamps, record counts, schema versions, error classes, and tool versions. They should not contain raw rows, UPNs, internal URLs, raw service errors, or credentials.
+
+An MCP connection is a disclosure boundary, not merely a transport. Whatever a
+tool returns can enter the selected model's context. Default Databricks and
+Power BI tools to metadata, aliases, aggregates, counts, and hashes; require a
+separate approval before returning row-level finance data, generated business
+SQL, report screenshots, or internal model/report definitions.
 
 Keep diagnostic output on stderr and machine-readable results on stdout. Redact before asking an external model to analyze logs.
 
 ## Supply chain
 
 Pin and review dependencies. Prefer Python's standard library for the default XML path. Do not let an agent install packages, modules, binaries, PowerShell Gallery content, MicrosoftPowerBIMgmt, Analysis Services libraries, `powerbi-modeling-mcp`, or a preview CLI on a managed workstation without approval.
+
+Ignore rules are defense in depth, not erasure. If a credential, real report
+definition, internal identifier, or data artifact ever entered Git, inspect
+history and downstream copies; remove/rewrite the publication history and
+rotate or revoke the credential when applicable.
 
 ## Command permissions
 

@@ -25,6 +25,21 @@ file pipeline onto the problem:
 6. Separate transport acceptance, metadata persistence, processing, M/data
    acquisition, DAX behavior, and rollback evidence.
 
+For a Databricks access or Genie incident, use this order:
+
+1. Prove the explicit named profile, authenticated identity alias, workspace
+   alias, client/SDK version, and non-secret effective authentication method.
+2. Separate workspace-object ACLs, SQL warehouse permission, Unity Catalog
+   privileges, token API scope, network policy, and the private company
+   allowlist. Visibility alone is not approval or `SELECT` access.
+3. Classify bounded metadata inventory, SQL execution, Genie Conversation API,
+   per-Agent Genie MCP, broad SQL MCP, job execution, or workspace mutation.
+4. For an accepted asynchronous message or statement, preserve its exact ID
+   privately and poll that same operation with a deadline and backoff.
+5. Separate API completion from semantic correctness. Capture SQL hash,
+   truncation, snapshot, grain, keys, dates, currency, sign, and deterministic
+   finance postconditions before accepting an answer.
+
 Retry only after classifying a failure as transient. Use bounded attempts with backoff and jitter. Repeating the same deterministic failure produces noise, not evidence.
 
 ## Common failure classes
@@ -54,6 +69,13 @@ Retry only after classifying a failure as transient. Use bounded attempts with b
 | Dates or amounts silently disagree | Locale-dependent parsing, timezone conversion, fiscal cutoffs, decimal scale, currency, signs, rounding, or blank/zero coercion | Parse with explicit formats and decimal types; retain parse-failure counts; reconcile using a written contract |
 | A retry duplicates output | Non-idempotent staging or append behavior, reused run directory, or missing manifest | Use unique run IDs, immutable finalized inputs, atomic output replacement, and content fingerprints; never append implicitly |
 | Databricks totals vary between runs | Different snapshots, late data, nondeterministic filters, cache assumptions, or mutable reference tables | Pin or record the available snapshot/version/time and rerun the same query contract; then use the Databricks reference |
+| CLI and SDK resolve different Databricks identities | Stale environment credential, auth precedence, wrong profile/config file, or mixed hosts | Stop; compare only sanitized effective-method and target aliases; require one explicit profile everywhere and never print token material |
+| Databricks metadata is visible but query access fails | `BROWSE`/metadata visibility was mistaken for `USE CATALOG`, `USE SCHEMA`, `SELECT`, row-filter, mask, or company approval | Intersect effective permissions with the private allowlist; stop rather than probing broader objects or alternate identities |
+| A warehouse list succeeds and a later read starts compute | Metadata discovery and query execution were conflated; a stopped warehouse can start for an authorized query | Treat query/compute as a distinct disclosed operation with target, cost, deadline, and validation; inventory must never test access with `SELECT` |
+| Genie completes with a plausible answer | Transport and generated SQL succeeded, but grain, joins, snapshot, currency, signs, filters, truncation, or business definitions may be wrong | Label it `UNVERIFIED_HYPOTHESIS`; inspect SQL hash/metadata privately and run the approved deterministic reconciliation |
+| Per-Agent Genie MCP forgets a prior follow-up | That managed MCP does not pass the outer client conversation history into the Genie API | Use the stateful Conversation API for task-scoped multi-turn work or ask a self-contained isolated question; do not silently reuse unrelated threads |
+| A read-only prompt is sent to Databricks SQL MCP | Prompt wording was mistaken for an authorization boundary; the managed SQL MCP is documented as read and write | Keep it disconnected from the production finance agent; use the narrow per-Agent Genie route or reviewed parameterized adapter |
+| Genie or statement polling is quiet | Local shell output says nothing about the exact remote request | Poll the same private operation ID with bounded backoff; a `runwatch` heartbeat proves local liveness only |
 | Power BI metadata write “succeeds” but model fails later | No round-trip check, unresolved dependency, M was stored but not evaluated, or metadata acceptance was mistaken for processing | Reconnect and diff TOM metadata; run DAX assertions; validate M in Desktop/test or with an authorized targeted service refresh; use both Power BI references |
 | REST returns `401` while polling | The current access token is absent, expired, or revoked; the server-side operation might still be running | Reauthenticate through the approved broker and resume polling the same request ID; never repeat an accepted POST merely because the polling token expired |
 | REST returns `403` | Scope, workspace/item role, ownership, tenant/capacity setting, gateway authority, or model category does not permit the operation | Inspect the exact gate and stop; token refresh and retries do not create permission |

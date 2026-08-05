@@ -35,6 +35,18 @@ def test_required_agent_files_exist() -> None:
         / "finance-data-reliability"
         / "references"
         / "power-bi-premium-workspace-runbook.md",
+        ROOT
+        / ".opencode"
+        / "skills"
+        / "finance-data-reliability"
+        / "references"
+        / "power-bi-report-authoring.md",
+        ROOT
+        / ".opencode"
+        / "skills"
+        / "finance-data-reliability"
+        / "references"
+        / "databricks-agent-access.md",
         ROOT / "docs" / "security-boundaries.md",
         ROOT / "docs" / "long-running-task-observability.md",
         ROOT / "src" / "runwatch" / "cli.py",
@@ -87,6 +99,16 @@ def test_data_artifacts_are_ignored() -> None:
         "*.runwatch.json",
         "*.runwatch.json.*.tmp",
         "*.runwatch.json.lock",
+        ".databricks/",
+        ".databrickscfg",
+        "dbx-state/",
+        "genie-state/",
+        "genie-transcripts/",
+        "query-results/",
+        "*.pbip",
+        "*.pbir",
+        "*.Report/",
+        "*.SemanticModel/",
     ):
         assert pattern in ignored
 
@@ -413,3 +435,218 @@ def test_public_power_bi_guidance_contains_only_synthetic_targets() -> None:
         "<semantic-model-name>",
     ):
         assert placeholder in combined
+
+
+def test_databricks_agent_access_is_routed_and_complete() -> None:
+    skill = (
+        ROOT
+        / ".opencode"
+        / "skills"
+        / "finance-data-reliability"
+        / "SKILL.md"
+    ).read_text(encoding="utf-8")
+    runbook_path = (
+        ROOT
+        / ".opencode"
+        / "skills"
+        / "finance-data-reliability"
+        / "references"
+        / "databricks-agent-access.md"
+    )
+    runbook = runbook_path.read_text(encoding="utf-8")
+
+    assert "references/databricks-agent-access.md" in skill
+    for trigger in (
+        "OAuth U2M/M2M",
+        "CLI profiles",
+        "Python SDK",
+        "Genie Conversation API",
+        "Databricks MCP",
+    ):
+        assert trigger in skill
+
+    for heading in (
+        "## Authentication decision",
+        "## Capability proof before data access",
+        "## Permission boundaries",
+        "## OpenCode command surface",
+        "## Direct Genie Conversation API",
+        "## Genie MCP and SQL MCP boundaries",
+        "## Deterministic finance validation",
+        "## Timers, polling, and apparent hangs",
+        "## Failure taxonomy",
+        "## Sanitized receipts",
+        "## Primary references",
+    ):
+        assert heading in runbook
+
+    for literal in (
+        "OAuth user-to-machine",
+        "WorkspaceClient(profile=PROFILE)",
+        "private approved allowlist",
+        "/api/2.0/mcp/genie/",
+        "/api/2.0/mcp/sql",
+        "read and write",
+        "runwatch",
+        "UNVERIFIED_HYPOTHESIS",
+    ):
+        assert literal in runbook
+
+    assert "### Sanitizing adapter inventory" in runbook
+    assert "full objects can contain" in runbook
+    assert "project each returned object immediately" in runbook
+    assert "fail closed with `MISSING_PREREQUISITE`" in runbook
+    assert "--output json" not in runbook
+    assert re.search(r"list\s*\(\s*w\.[A-Za-z_]+\.list\s*\(", runbook) is None
+    assert "$databricks current-user me" not in runbook
+    assert "$databricks warehouses list" not in runbook
+
+
+def test_dbx_capabilities_is_metadata_only_and_token_safe() -> None:
+    config = json.loads((ROOT / "opencode.json").read_text(encoding="utf-8"))
+    command = config["command"]["dbx-capabilities"]
+    template = command["template"]
+
+    assert command["agent"] == "finance-build"
+    assert "MISSING_PREREQUISITE" in template
+    assert "bounded nonrecursive approved workspace path" in template
+    assert "aliases, counts, capability booleans" in template
+    for prohibited in (
+        "Never request, print, persist, decode, export, or accept a bearer token",
+        "Do not run SQL",
+        "start or stop compute",
+        "export or run a notebook",
+        "run or cancel a job",
+        "recurse from a workspace/catalog root",
+        "change grants",
+        "install packages",
+        "modify any Databricks object",
+    ):
+        assert prohibited in template
+
+
+def test_dbx_genie_probe_discloses_state_compute_and_unverified_result() -> None:
+    config = json.loads((ROOT / "opencode.json").read_text(encoding="utf-8"))
+    command = config["command"]["dbx-genie-probe"]
+    template = command["template"]
+
+    assert command["agent"] == "finance-build"
+    assert "one task-scoped Genie interaction" in template
+    assert "conversation state" in template
+    assert "read query/warehouse compute" in template
+    assert "deadline, poll bound, result row/byte caps" in template
+    assert "generated-SQL hash" in template
+    assert "broad Databricks SQL MCP" in template
+    assert "must remain UNVERIFIED_HYPOTHESIS" in template
+    assert "Do not use" in template
+    assert "or claim VERIFIED" in template
+
+
+def test_power_bi_report_authoring_is_routed_and_complete() -> None:
+    skill = (
+        ROOT
+        / ".opencode"
+        / "skills"
+        / "finance-data-reliability"
+        / "SKILL.md"
+    ).read_text(encoding="utf-8")
+    runbook = (
+        ROOT
+        / ".opencode"
+        / "skills"
+        / "finance-data-reliability"
+        / "references"
+        / "power-bi-report-authoring.md"
+    ).read_text(encoding="utf-8")
+
+    assert "references/power-bi-report-authoring.md" in skill
+    for trigger in (
+        "report pages",
+        "blank canvas space",
+        "PBIP/PBIR",
+        "Report Authoring/Design/Planner/Management",
+        "Desktop Bridge",
+        "getDefinition?format=PBIR",
+        "updateDefinition",
+    ):
+        assert trigger in skill
+
+    for literal in (
+        "powerbi-report-authoring",
+        "powerbi-report-management",
+        "Power BI Desktop Bridge",
+        "PBIR-Legacy",
+        "getDefinition?format=PBIR",
+        "updateDefinition",
+        "whole-definition replacement",
+        "sensitivity label",
+        "202 Accepted",
+        "Retry-After",
+    ):
+        assert literal in runbook
+
+    for gate in (
+        "### Gate A: read-only baseline",
+        "### Gate B: local candidate",
+        "### Gate C: development deployment",
+        "### Gate D: shared or production deployment",
+    ):
+        assert gate in runbook
+
+
+def test_new_reference_internal_links_resolve() -> None:
+    references = [
+        ROOT
+        / ".opencode"
+        / "skills"
+        / "finance-data-reliability"
+        / "references"
+        / "databricks-agent-access.md",
+        ROOT
+        / ".opencode"
+        / "skills"
+        / "finance-data-reliability"
+        / "references"
+        / "power-bi-report-authoring.md",
+    ]
+
+    for reference in references:
+        content = reference.read_text(encoding="utf-8")
+        for target in re.findall(r"\[[^]]+\]\(([^)]+)\)", content):
+            if target.startswith(("https://", "http://", "#")):
+                continue
+            assert (reference.parent / target).resolve().is_file(), (
+                reference,
+                target,
+            )
+
+
+def test_new_guidance_has_no_live_databricks_or_auth_identifiers() -> None:
+    files = [
+        ROOT
+        / ".opencode"
+        / "skills"
+        / "finance-data-reliability"
+        / "references"
+        / "databricks-agent-access.md",
+        ROOT
+        / ".opencode"
+        / "skills"
+        / "finance-data-reliability"
+        / "references"
+        / "power-bi-report-authoring.md",
+    ]
+    combined = "\n".join(path.read_text(encoding="utf-8") for path in files)
+
+    assert re.search(r"(?i)\bdapi[a-z0-9]{20,}\b", combined) is None
+    assert re.search(
+        r"(?i)https://adb-[0-9]+\.[0-9]+\.azuredatabricks\.net", combined
+    ) is None
+    assert re.search(r"(?i)Authorization\s*:\s*Bearer\s+\S+", combined) is None
+    assert re.search(
+        r"\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b",
+        combined,
+    ) is None
+    assert re.search(
+        r"(?i)\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b", combined
+    ) is None

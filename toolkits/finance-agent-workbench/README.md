@@ -32,6 +32,20 @@ TMDL, Desktop, and the two Microsoft Power BI MCP servers. It also documents
 permission gates, token renewal, targeted asynchronous refresh, M validation,
 PBIX consequences, rollback, and sanitized receipts.
 
+For Databricks identity, bounded inventory, Unity Catalog discovery, Genie,
+and MCP selection, use
+[Databricks agent access](.opencode/skills/finance-data-reliability/references/databricks-agent-access.md).
+It establishes one named OAuth profile, a narrow SDK adapter, explicit
+metadata/query/compute boundaries, and a stateful Genie workflow whose output
+remains unverified until deterministic finance checks pass.
+
+For report pages, visuals, blank canvas space, filters, slicers, layout, and
+themes, use
+[Power BI report authoring](.opencode/skills/finance-data-reliability/references/power-bi-report-authoring.md).
+It covers Microsoft's preview Report Authoring skill and PBIR workflow. It is
+a local candidate-and-review path, not a direct production visual-edit API;
+publishing remains a separately approved whole-definition replacement.
+
 ## Safe adoption
 
 1. Put this repository on a company-approved private Git host before adding any internal knowledge.
@@ -67,6 +81,32 @@ This command is read-only. It inventories the accessible target and selects
 between REST, XMLA, MCP, and Desktop without taking ownership, refreshing
 permissions, triggering refresh, or testing write access by mutation. It never
 asks for or prints a bearer token.
+
+For an approved Databricks environment, begin with bounded metadata discovery:
+
+```text
+/dbx-capabilities profile_alias=<approved-alias> \
+  workspace_path_alias=<approved-path-alias> \
+  catalog_alias=<approved-catalog-alias> \
+  schema_alias=<approved-schema-alias>
+```
+
+This command does not run SQL, return rows, export notebooks, start compute,
+or change workspace/Unity Catalog state. It uses only the existing approved
+authenticated adapter and returns aliases, counts, and capability evidence.
+
+When an exact curated Genie Agent is approved for an investigation, use:
+
+```text
+/dbx-genie-probe profile_alias=<approved-alias> \
+  space_alias=<approved-genie-alias> \
+  question_template=<approved-template> \
+  check_id=<deterministic-check-id>
+```
+
+This creates task-scoped conversation state and may execute a query or consume
+warehouse compute. Its result is always an `UNVERIFIED_HYPOTHESIS`; only the
+separate deterministic reconciliation can promote the conclusion.
 
 ## Validation
 
@@ -147,3 +187,7 @@ Do not turn raw chat transcripts into permanent context. Preserve only stable de
 - [OpenCode configuration precedence](https://opencode.ai/docs/config/)
 - [GPT-5.3-Codex model capabilities](https://developers.openai.com/api/docs/models/gpt-5.3-codex)
 - [Python XML security guidance](https://docs.python.org/3/library/xml.html#xml-vulnerabilities)
+- [Azure Databricks managed MCP servers](https://learn.microsoft.com/en-us/azure/databricks/generative-ai/mcp/managed-mcp)
+- [Azure Databricks Genie Conversation API](https://learn.microsoft.com/en-us/azure/databricks/genie-agents/conversation-api)
+- [Databricks unified authentication](https://docs.databricks.com/aws/en/dev-tools/auth/unified-auth)
+- [Microsoft Power BI Report Authoring skill](https://learn.microsoft.com/en-us/power-bi/developer/agentic/power-bi-report-authoring-skill-overview)

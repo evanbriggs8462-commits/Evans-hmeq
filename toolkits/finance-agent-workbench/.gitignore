@@ -30,6 +30,22 @@ quarantine/
 *.xlsx
 *.pbix
 *.pbit
+*.pbip
+*.pbir
+*.bim
+*.tmdl
+*.Report/
+*.SemanticModel/
+screenshots/
+
+# Databricks credentials and private runtime evidence.
+.databricks/
+.databrickscfg
+dbx.local.json
+dbx-state/
+genie-state/
+genie-transcripts/
+query-results/
 
 # Secrets and local overrides.
 .env

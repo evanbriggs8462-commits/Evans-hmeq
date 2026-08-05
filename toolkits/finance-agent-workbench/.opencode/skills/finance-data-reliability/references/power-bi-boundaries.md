@@ -6,6 +6,12 @@ For a capacity workspace, published semantic model, Power BI REST request,
 XMLA endpoint, MCP server, refresh operation, or expiring token, also load
 [Power BI Premium workspace operations](power-bi-premium-workspace-runbook.md).
 
+For report pages, visuals, layout, filters, slicers, PBIP/PBIR, the Desktop
+Bridge, or report-definition retrieval/replacement, also read
+[Power BI report authoring](power-bi-report-authoring.md). Report Authoring owns
+the local report-layer candidate; the Modeling MCP and Tabular Editor own
+semantic-model metadata within their separate gates.
+
 ## Capability boundary
 
 | Operation | Correct boundary | Required evidence |

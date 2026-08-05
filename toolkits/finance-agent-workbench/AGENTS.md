@@ -77,7 +77,7 @@ file.
 
 ## Skill routing
 
-For file staging, XML inspection, Databricks reconciliation, or Power BI work, read `.opencode/skills/finance-data-reliability/SKILL.md` and every reference it routes for the task. When more than one trigger matches, load all matching references. The large-XML/SMB runbook is mandatory before retrying a failed or timed-out remote content operation. The Premium-workspace runbook is mandatory for Power BI REST, Fabric REST, XMLA, service-side Tabular Editor or TMDL View, Power BI MCP, published-model, enhanced-refresh, refresh-history, or expiring-token work.
+For file staging, XML inspection, Databricks access/reconciliation, or Power BI work, read `.opencode/skills/finance-data-reliability/SKILL.md` and every reference it routes for the task. When more than one trigger matches, load all matching references. The large-XML/SMB runbook is mandatory before retrying a failed or timed-out remote content operation. The Databricks access runbook is mandatory before authentication, CLI/SDK inventory, Genie, or Databricks MCP work. The Premium-workspace runbook is mandatory for Power BI REST, Fabric REST, XMLA, service-side Tabular Editor or TMDL View, Power BI MCP, published-model, enhanced-refresh, refresh-history, or expiring-token work. The report-authoring runbook is mandatory for PBIP/PBIR pages, visuals, layout, Desktop Bridge, or report-definition retrieval/replacement.
 
 ## Change gates
 
@@ -95,6 +95,17 @@ For file staging, XML inspection, Databricks reconciliation, or Power BI work, r
 - Build supports external query/read scenarios; model Write is required for XMLA metadata mutation and is normally inherited by workspace Contributor, Member, and Admin roles. Neither proves OAuth scope, tenant settings, capacity XMLA Read Write, ownership, gateway access, or model compatibility.
 - Tabular Editor 2 can write an M partition expression as metadata, but it cannot execute or validate Power Query M or schema-check the evaluated partition. Validate M in Desktop/test before promotion or through a separately authorized service refresh using the service credentials and gateway.
 - Preserve the original PBIX and a private canonical metadata baseline before the first XMLA write to a Desktop-authored published model. An XMLA write can make that semantic model unavailable for PBIX download.
+- Use the preview Power BI Report Authoring skill for PBIP/PBIR report-layer changes, not the Modeling MCP. A published report workflow retrieves the complete PBIR definition, edits and validates a private local candidate, reviews a Desktop rendering and diff, then requires a separate high-impact gate before whole-definition `updateDefinition`.
+- Treat report `updateDefinition` as a complete-definition replacement, never a one-visual patch. Refuse publication when the baseline changed concurrently, bindings are unresolved, an encrypted sensitivity label blocks retrieval, the LRO is nonterminal, or rollback evidence is missing.
+
+## Databricks access boundaries
+
+- Prefer one explicit named OAuth U2M profile and the Databricks Python SDK over parallel raw REST, CLI, SQL, and MCP paths. Never request, print, decode, export, or accept a bearer token; PAT authentication is a separately approved legacy fallback.
+- Use `/dbx-capabilities` for bounded metadata inventory. Visible catalogs, schemas, notebooks, warehouses, or tables are not automatically approved or queryable; intersect platform visibility with a private allowlist and effective Unity Catalog/workspace permissions.
+- Use `/dbx-genie-probe` only against an allowlisted Genie Agent alias. Genie discovers candidate sources and SQL; it cannot certify finance logic. A separate deterministic reconciliation check must prove grain, keys, dates, currency, signs, duplicates, totals, and snapshot alignment.
+- The configured Genie table list is context, not the security boundary. Unity Catalog grants, row filters, column masks, the calling identity, and company approval are the boundary.
+- Keep the broad Databricks SQL MCP disabled for the production finance agent. Current vendor documentation describes it as read and write. A read-only prompt is not a technical write control.
+- Listing warehouse state must not start compute. Any query, Genie call, job run, or warehouse start is a distinct cost/data-access operation. Preserve remote operation IDs and poll them; local heartbeat is not remote progress.
 
 ## Evidence and reporting
 
