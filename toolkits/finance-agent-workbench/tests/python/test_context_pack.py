@@ -82,6 +82,47 @@ def test_migration_skills_have_triggering_frontmatter() -> None:
     assert observed == expected
 
 
+def test_ecc_intercompany_brief_is_verbatim_notebook_cell_and_routed() -> None:
+    catalog = _load_json("context/catalog.json")
+    brief_path = (
+        ".opencode/skills/finance-report-migration/references/"
+        "ecc-intercompany-reconciliation-v7-implementation-brief.md"
+    )
+
+    brief = (ROOT / brief_path).read_text(encoding="utf-8")
+    assert brief.startswith(
+        "%md\n# Implementation Brief: Correct and Harden the ECC "
+        "Intercompany Reconciliation POC\n"
+    )
+    assert not brief.startswith("---")
+    assert "```" not in brief
+    for heading in (
+        "## 1. Correct the reporting population",
+        "## 2. Protect the ECC record grain",
+        "## 3. Correct partner assignment",
+        "## 4. Separate balance coverage from match eligibility",
+        "## 5. Rebuild candidate generation",
+        "## 6. Support split-OU and one-to-many billing",
+        "## 7. Replace or accurately label the single-pass matcher",
+        "## 8. Govern tolerances",
+        "## 9. Correct summary mathematics",
+        "## 10. Required validation gates",
+    ):
+        assert heading in brief
+
+    migration_skill = (
+        ROOT / ".opencode" / "skills" / "finance-report-migration" / "SKILL.md"
+    ).read_text(encoding="utf-8")
+    assert "ecc-intercompany-reconciliation-v7-implementation-brief.md" in (
+        migration_skill
+    )
+
+    for workflow_type in ("query_migration", "reconciliation"):
+        route = catalog["task_workflows"][workflow_type]
+        narrow_skill = (ROOT / route["skill"]).read_text(encoding="utf-8")
+        assert "finance-report-migration" in narrow_skill
+
+
 SCHEMA_EXAMPLES = (
     ("schemas/task-brief.schema.json", "templates/task-brief.example.json"),
     ("schemas/run-handoff.schema.json", "templates/run-handoff.example.json"),
