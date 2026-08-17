@@ -65,14 +65,6 @@ missing, model-routing guidance, and a resumable handoff contract. It should be
 loaded with the reliability skill whenever the task touches files, Databricks,
 Power BI, or a live system.
 
-For ECC intercompany customer/vendor open-item reconstruction and reciprocal
-matching, use the notebook-ready
-[V7 implementation brief](.opencode/skills/finance-report-migration/references/ecc-intercompany-reconciliation-v7-implementation-brief.md).
-The finance-migration skill loads it conditionally for ECC/VBUND/RCOMP work so
-unrelated migration and reconciliation tasks do not pay its context cost. Its
-raw file begins with `%md` and can be pasted into one Databricks Markdown cell
-without editing.
-
 ## Safe adoption
 
 1. Put this repository on a company-approved private Git host before adding any internal knowledge.

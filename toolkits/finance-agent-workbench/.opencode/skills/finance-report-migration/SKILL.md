@@ -26,12 +26,6 @@ explains **how to operate safely**.
 - Read [finance semantics](references/finance-semantics.md) whenever grain,
   ledger, hierarchy, account, sign, currency, FX, intercompany, blank/zero,
   effective date, or mapping logic can affect the answer.
-- Read the [V7 ECC intercompany implementation brief](references/ecc-intercompany-reconciliation-v7-implementation-brief.md)
-  when the task involves V7 unified SQL, ECC customer/vendor items open at a
-  historical key date, BKPF/BSEG/BSID/BSAD/BSIK/BSAK, VBUND/RCOMP partner
-  assignment, reciprocal D/K matching, split billing, matching coverage, or
-  residual exposure. Treat it as the task-specific implementation and
-  acceptance contract; do not load it for unrelated migrations.
 - Read [local-model operations](references/local-model-operations.md) when
   preparing a task, choosing a model, limiting tool use, resuming prior work,
   capturing a failure, or deciding whether to escalate reasoning.
