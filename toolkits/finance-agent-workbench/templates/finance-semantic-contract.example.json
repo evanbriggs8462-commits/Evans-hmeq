@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "contract_id": "SYNTHETIC-CONTRACT-001",
+  "report_alias": "REPORT_A",
+  "status": "draft",
+  "business_purpose": "Explain synthetic margin by plant and product without redefining the legacy report.",
+  "grain": "One row per synthetic document line and hierarchy-effective state.",
+  "keys": {
+    "candidates": [["DOCUMENT_A", "LINE_A"]],
+    "tested_unique_key": ["DOCUMENT_A", "LINE_A"],
+    "duplicate_policy": "Reject unexplained duplicates and preserve an exception set."
+  },
+  "snapshot_behavior": "Synthetic frozen period-end extract.",
+  "date_roles": [
+    {
+      "name": "POSTING_DATE_A",
+      "meaning": "Selects the reporting period.",
+      "timezone_or_calendar": "FISCAL_CALENDAR_A"
+    }
+  ],
+  "ledgers": ["LEDGER_A"],
+  "hierarchies": [
+    {
+      "alias": "PRODUCT_HIERARCHY_A",
+      "owner_alias": "OWNER_A",
+      "as_of_rule": "Use the posting date.",
+      "effective_date_rule": "Start inclusive and end exclusive.",
+      "unmapped_policy": "Preserve UNKNOWN_PRODUCT and report the exception count."
+    }
+  ],
+  "measures": [
+    {
+      "alias": "MARGIN_PERCENT_A",
+      "formula": "MARGIN_AMOUNT_A divided by REVENUE_AMOUNT_A",
+      "aggregation": "Recalculate from aggregated components; do not average row percentages.",
+      "blank_or_zero_denominator": "Return blank and count the exception.",
+      "components": ["REVENUE_AMOUNT_A", "COST_AMOUNT_A"]
+    }
+  ],
+  "currency_rules": ["Use CURRENCY_A as the comparison partition; FX rule intentionally unresolved."],
+  "sign_rules": ["Parse a synthetic trailing minus before applying the documented presentation sign."],
+  "null_policy": ["Keep missing, unknown, not applicable, blank, and zero distinct."],
+  "join_rules": ["Prove one hierarchy match per product/date before expansion."],
+  "filters": ["No undocumented exclusions."],
+  "tolerances": ["Keys and counts exact; amount tolerance requires owner approval."],
+  "known_legacy_defects": [],
+  "unresolved_questions": ["Which approved date and rate type select FX?"],
+  "evidence_refs": ["inventory:source-map", "fixture:hierarchy-effective-date"]
+}
+

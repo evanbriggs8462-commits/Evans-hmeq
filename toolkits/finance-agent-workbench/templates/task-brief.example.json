@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "task_id": "SYNTHETIC-MIGRATION-001",
+  "outcome": "Create a read-only inventory and candidate mapping for a synthetic legacy margin report.",
+  "workflow_type": "inventory",
+  "mode": "read-only",
+  "source_aliases": ["SOURCE_REPORT_A"],
+  "target_aliases": ["GOVERNED_TARGET_A"],
+  "known_facts": [
+    {
+      "claim": "The source artifact hash was captured before inventory.",
+      "evidence_ref": "receipt:source-fingerprint"
+    }
+  ],
+  "assumptions": [],
+  "unknowns": ["The approved effective-date hierarchy policy is not yet present."],
+  "semantic_contract": {
+    "grain": null,
+    "keys": [],
+    "date_scope": "SYNTHETIC_PERIOD_A",
+    "measures": ["MARGIN_AMOUNT_A"],
+    "dimensions": ["PLANT_A", "PRODUCT_A"],
+    "rules": [],
+    "tolerances": ["exact for keys and row counts; owner-approved amount tolerance pending"]
+  },
+  "allowed_effects": ["LOCAL_READ"],
+  "highest_permitted_gate": "LOCAL_READ",
+  "prohibited_actions": ["live write", "refresh", "schedule change", "compute start"],
+  "selected_context": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "reason": "Always-loaded authority and evidence kernel",
+      "classification": "PUBLIC_SAFE"
+    },
+    {
+      "path": ".opencode/skills/finance-report-migration/SKILL.md",
+      "sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+      "reason": "Inventory workflow requires the finance migration router",
+      "classification": "PUBLIC_SAFE"
+    },
+    {
+      "path": ".opencode/skills/inventory-finance-report/SKILL.md",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "reason": "Selected inventory workflow",
+      "classification": "PUBLIC_SAFE"
+    },
+    {
+      "path": ".opencode/skills/finance-report-migration/references/work-context.md",
+      "sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "reason": "Routed public work context",
+      "classification": "PUBLIC_SAFE"
+    },
+    {
+      "path": ".opencode/skills/finance-report-migration/references/migration-playbook.md",
+      "sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "reason": "Routed inventory and migration workflow guidance",
+      "classification": "PUBLIC_SAFE"
+    }
+  ],
+  "tool_budget": {
+    "max_files": 25,
+    "max_elapsed_seconds": 900
+  },
+  "required_evidence": ["artifact inventory", "dependency map", "missing artifact list"],
+  "next_permitted_step": "Run the read-only inventory workflow."
+}

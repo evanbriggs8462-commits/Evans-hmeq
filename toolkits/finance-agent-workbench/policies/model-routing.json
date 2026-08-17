@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "principle": "Use the least expensive approved model that passes deterministic invariants for the task family. Model choice never changes permissions.",
+  "binding": "Checked-in OpenCode roles omit provider/model IDs. Select or bind only locally verified approved IDs in private user or organization configuration.",
+  "opencode_roles": {
+    "scout": "finance-scout",
+    "builder": "finance-build",
+    "compute": "finance-compute",
+    "investigator": "finance-deep",
+    "verifier": "finance-verifier"
+  },
+  "roles": {
+    "scout": {
+      "tasks": ["inventory", "reference-selection", "metadata-extraction", "task-brief"],
+      "reasoning": "low-or-medium",
+      "writes": "none"
+    },
+    "builder": {
+      "tasks": ["repo-local-candidate", "wrapper", "sql-m-dax-candidate", "tests", "documentation"],
+      "reasoning": "medium",
+      "writes": "repo-local-candidate-only"
+    },
+    "compute": {
+      "tasks": ["approved-adapter-read", "bounded-query-or-genie-compute"],
+      "reasoning": "low-or-medium",
+      "writes": "task-scoped-external-state-only-when-command-discloses-it"
+    },
+    "investigator": {
+      "tasks": ["schema-drift", "hierarchy-grain-currency-ambiguity", "cross-system-failure"],
+      "reasoning": "high",
+      "writes": "no-broader-than-builder"
+    },
+    "verifier": {
+      "tasks": ["independent-diff-review", "deterministic-checks", "receipt-and-policy-validation"],
+      "reasoning": "medium-or-high",
+      "writes": "none"
+    },
+    "summarizer": {
+      "tasks": ["context-capsule", "evidence-bundle", "run-handoff"],
+      "reasoning": "low-or-medium",
+      "writes": "ignored-run-state-or-candidate-document"
+    }
+  },
+  "escalate_when": [
+    "required evidence conflicts",
+    "the same invariant fails after two bounded materially different attempts",
+    "grain hierarchy ledger currency sign date or lineage semantics remain ambiguous",
+    "tool output is malformed stale or truncated",
+    "required context cannot fit without losing mandatory evidence",
+    "an unsupported schema or version prevents deterministic validation",
+    "the next action crosses a live write security or broad-impact boundary"
+  ],
+  "do_not_escalate_only_because": [
+    "the task is long",
+    "the first test failed",
+    "a package is missing",
+    "a live adapter is unavailable",
+    "the model can improve its task brief or load a routed reference"
+  ],
+  "promotion_rule": "Qualify a model per task family using synthetic evals. Require all critical invariants and zero critical policy violations; do not let the model grade itself."
+}

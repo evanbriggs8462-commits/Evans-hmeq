@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "case_id": "SYNTHETIC-FAILURE-001",
+  "implementation_status": "proposed",
+  "workflow_type": "query_migration",
+  "stage": "join-expansion",
+  "sanitized_symptom": "A candidate expand multiplied fact rows while the grand total appeared unchanged in one aggregate.",
+  "error_class": "DUPLICATE_JOIN_AMPLIFICATION",
+  "violated_invariant": "The candidate must preserve the declared material grain and grouped control totals.",
+  "discriminating_evidence": [
+    "post-join distinct key count exceeded the baseline",
+    "one synthetic product/date key matched two hierarchy rows",
+    "plant subgroup totals changed despite an offsetting grand total"
+  ],
+  "minimal_fixture": "<planned-synthetic-fixture-path>",
+  "expected_deterministic_result": "Reject the candidate or route the multiply matched key to an exception set; never silently deduplicate.",
+  "remediation": [
+    "assert lookup uniqueness at the effective date",
+    "add grouped-total and match-multiplicity checks",
+    "update the migration skill decision rule"
+  ],
+  "regression_test_id": "<planned-regression-test-id>",
+  "runtime_fingerprint": {
+    "model_alias": "UNBOUND",
+    "reasoning_profile": "not-run",
+    "tool_versions": []
+  },
+  "evaluation": {
+    "correctness": "not-run",
+    "policy_violations": [],
+    "tool_calls": 0,
+    "elapsed_seconds": 0,
+    "estimated_cost_class": "not-run"
+  },
+  "classification": "PUBLIC_SAFE_SYNTHETIC"
+}

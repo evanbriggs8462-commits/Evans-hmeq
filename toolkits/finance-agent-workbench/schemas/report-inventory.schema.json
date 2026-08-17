@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/finance-agent-workbench/report-inventory.schema.json",
+  "title": "Finance report inventory",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "inventory_id",
+    "task_id",
+    "status",
+    "artifacts",
+    "data_acquisition",
+    "semantic_model",
+    "report_layer",
+    "operations",
+    "evidence_map",
+    "known_control_evidence",
+    "missing_artifacts",
+    "risk_hotspots"
+  ],
+  "properties": {
+    "version": {"const": 1},
+    "inventory_id": {"type": "string", "minLength": 1},
+    "task_id": {"type": "string", "minLength": 1},
+    "status": {"enum": ["complete", "partial", "blocked"]},
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["alias", "type", "sha256", "evidence_status", "evidence_refs"],
+        "properties": {
+          "alias": {"type": "string"},
+          "type": {"type": "string"},
+          "sha256": {
+            "oneOf": [
+              {"type": "null"},
+              {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+            ]
+          },
+          "evidence_status": {"enum": ["observed", "inferred", "unknown", "blocked"]},
+          "evidence_refs": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "data_acquisition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["queries", "parameters", "helper_dependencies", "source_rules", "unknowns"],
+      "properties": {
+        "queries": {"type": "array", "items": {"type": "string"}},
+        "parameters": {"type": "array", "items": {"type": "string"}},
+        "helper_dependencies": {"type": "array", "items": {"type": "string"}},
+        "source_rules": {"type": "array", "items": {"type": "string"}},
+        "unknowns": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "semantic_model": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tables", "measures", "calculated_objects", "relationships", "roles", "partitions", "unknowns"],
+      "properties": {
+        "tables": {"type": "array", "items": {"type": "string"}},
+        "measures": {"type": "array", "items": {"type": "string"}},
+        "calculated_objects": {"type": "array", "items": {"type": "string"}},
+        "relationships": {"type": "array", "items": {"type": "string"}},
+        "roles": {"type": "array", "items": {"type": "string"}},
+        "partitions": {"type": "array", "items": {"type": "string"}},
+        "unknowns": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "report_layer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pages", "visuals", "filters_slicers", "bookmarks_navigation", "theme_assets", "unknowns"],
+      "properties": {
+        "pages": {"type": "array", "items": {"type": "string"}},
+        "visuals": {"type": "array", "items": {"type": "string"}},
+        "filters_slicers": {"type": "array", "items": {"type": "string"}},
+        "bookmarks_navigation": {"type": "array", "items": {"type": "string"}},
+        "theme_assets": {"type": "array", "items": {"type": "string"}},
+        "unknowns": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "operations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["refresh", "dependencies", "consumer_deadlines", "unknowns"],
+      "properties": {
+        "refresh": {"type": "array", "items": {"type": "string"}},
+        "dependencies": {"type": "array", "items": {"type": "string"}},
+        "consumer_deadlines": {"type": "array", "items": {"type": "string"}},
+        "unknowns": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "evidence_map": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["item_ref", "evidence_status", "evidence_refs"],
+        "properties": {
+          "item_ref": {"type": "string", "minLength": 1},
+          "evidence_status": {"enum": ["observed", "inferred", "unknown", "blocked"]},
+          "evidence_refs": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "known_control_evidence": {"type": "array", "items": {"type": "string"}},
+    "missing_artifacts": {"type": "array", "items": {"type": "string"}},
+    "risk_hotspots": {"type": "array", "items": {"type": "string"}}
+  }
+}

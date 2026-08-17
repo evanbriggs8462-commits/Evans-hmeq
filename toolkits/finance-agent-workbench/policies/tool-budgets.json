@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "defaults": {
+    "max_repeated_capability_probes": 1,
+    "max_retry_attempts_per_transient_operation": 2,
+    "max_recursive_roots": 1,
+    "max_unbounded_result_rows": 0,
+    "max_unbounded_file_reads": 0,
+    "context_policy": "Load only the always set, one task brief, selected skills, matching references, required target files, and bounded evidence.",
+    "budget_exhaustion": "Write a handoff and return INCONCLUSIVE_BUDGET; do not discard completed evidence or broaden access."
+  },
+  "profiles": {
+    "scout": {
+      "suggested_model_steps": 12,
+      "purpose": "classification and bounded inventory"
+    },
+    "builder": {
+      "suggested_model_steps": 32,
+      "purpose": "candidate plus relevant tests"
+    },
+    "compute": {
+      "suggested_model_steps": 12,
+      "purpose": "one bounded approved adapter interaction"
+    },
+    "verifier": {
+      "suggested_model_steps": 16,
+      "purpose": "fresh independent validation"
+    },
+    "deep": {
+      "suggested_model_steps": 32,
+      "purpose": "one bounded semantic or cross-system ambiguity"
+    }
+  },
+  "task_override_fields": [
+    "max_files",
+    "max_objects",
+    "max_rows",
+    "max_bytes",
+    "max_stdout_bytes",
+    "max_polls",
+    "max_elapsed_seconds",
+    "max_compute_actions",
+    "max_context_tokens"
+  ],
+  "schema_ceilings": {
+    "max_files": 10000,
+    "max_objects": 10000,
+    "max_rows": 1000000,
+    "max_bytes": 1073741824,
+    "max_stdout_bytes": 10485760,
+    "max_polls": 1000,
+    "max_elapsed_seconds": 86400,
+    "max_compute_actions": 100,
+    "max_context_tokens": 1000000
+  }
+}

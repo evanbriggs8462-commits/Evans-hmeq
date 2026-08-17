@@ -1,0 +1,106 @@
+{
+  "version": 1,
+  "purpose": "Route a finance task to the smallest complete context slice for a lower-cost local model.",
+  "always": [
+    "AGENTS.md"
+  ],
+  "private_overlay": {
+    "path": "context/local-context.json",
+    "example": "context/local-context.example.json",
+    "required": false,
+    "rule": "Load only fields required by the task and approved for the configured model/provider. Never copy the whole overlay into model context or portable output."
+  },
+  "task_workflows": {
+    "inventory": {
+      "skill": ".opencode/skills/inventory-finance-report/SKILL.md",
+      "references": [
+        ".opencode/skills/finance-report-migration/references/work-context.md",
+        ".opencode/skills/finance-report-migration/references/migration-playbook.md"
+      ]
+    },
+    "semantic_resolution": {
+      "skill": ".opencode/skills/resolve-finance-semantics/SKILL.md",
+      "references": [
+        ".opencode/skills/finance-report-migration/references/work-context.md",
+        ".opencode/skills/finance-report-migration/references/finance-semantics.md"
+      ]
+    },
+    "query_migration": {
+      "skill": ".opencode/skills/migrate-finance-query/SKILL.md",
+      "references": [
+        ".opencode/skills/finance-report-migration/references/work-context.md",
+        ".opencode/skills/finance-report-migration/references/migration-playbook.md",
+        ".opencode/skills/finance-report-migration/references/finance-semantics.md"
+      ]
+    },
+    "model_report_parity": {
+      "skill": ".opencode/skills/finance-report-migration/SKILL.md",
+      "references": [
+        ".opencode/skills/finance-report-migration/references/work-context.md",
+        ".opencode/skills/finance-report-migration/references/migration-playbook.md",
+        ".opencode/skills/finance-data-reliability/references/power-bi-boundaries.md",
+        ".opencode/skills/finance-data-reliability/references/power-bi-report-authoring.md"
+      ]
+    },
+    "reconciliation": {
+      "skill": ".opencode/skills/reconcile-finance-report/SKILL.md",
+      "references": [
+        ".opencode/skills/finance-report-migration/references/work-context.md",
+        ".opencode/skills/finance-report-migration/references/migration-playbook.md",
+        ".opencode/skills/finance-report-migration/references/finance-semantics.md",
+        ".opencode/skills/finance-data-reliability/references/databricks-reconciliation.md"
+      ]
+    },
+    "refresh_profile": {
+      "skill": ".opencode/skills/profile-finance-refresh/SKILL.md",
+      "references": [
+        ".opencode/skills/finance-report-migration/references/work-context.md",
+        ".opencode/skills/finance-report-migration/references/migration-playbook.md",
+        ".opencode/skills/finance-data-reliability/references/power-bi-premium-workspace-runbook.md"
+      ]
+    },
+    "platform_discovery": {
+      "skill": ".opencode/skills/finance-data-reliability/SKILL.md",
+      "references": []
+    },
+    "failure_diagnosis": {
+      "skill": ".opencode/skills/finance-data-reliability/SKILL.md",
+      "references": [
+        ".opencode/skills/finance-data-reliability/references/failure-taxonomy.md"
+      ]
+    },
+    "handoff": {
+      "skill": ".opencode/skills/handoff-finance-run/SKILL.md",
+      "references": [
+        ".opencode/skills/finance-report-migration/references/local-model-operations.md"
+      ]
+    }
+  },
+  "control_workflows": {
+    "bootstrap_context": {
+      "skill": ".opencode/skills/bootstrap-finance-context/SKILL.md",
+      "references": [
+        ".opencode/skills/finance-report-migration/references/work-context.md",
+        ".opencode/skills/finance-report-migration/references/local-model-operations.md"
+      ]
+    },
+    "prepare": {
+      "skill": ".opencode/skills/prepare-finance-task/SKILL.md",
+      "references": [
+        ".opencode/skills/finance-report-migration/references/local-model-operations.md"
+      ]
+    },
+    "failure_capture": {
+      "skill": ".opencode/skills/capture-agent-failure/SKILL.md",
+      "references": [
+        ".opencode/skills/finance-report-migration/references/local-model-operations.md",
+        ".opencode/skills/finance-data-reliability/references/failure-taxonomy.md"
+      ]
+    }
+  },
+  "classification": {
+    "PUBLIC_SAFE": "Generic guidance, schemas, synthetic fixtures, placeholders, and sanitized error classes.",
+    "WORK_INTERNAL": "Approved exact business rules, object aliases, mappings, and evidence kept in ignored/company-controlled context.",
+    "RESTRICTED": "Credentials, tokens, authorization headers, raw records, PII, secrets, and sensitive exports; never place in model context or Git."
+  }
+}
