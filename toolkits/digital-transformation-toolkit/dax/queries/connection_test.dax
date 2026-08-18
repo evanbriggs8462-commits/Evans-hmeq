@@ -1,0 +1,5 @@
+EVALUATE
+ROW(
+    "ToolkitConnection", "OK",
+    "CheckedAtUtc", UTCNOW()
+)
