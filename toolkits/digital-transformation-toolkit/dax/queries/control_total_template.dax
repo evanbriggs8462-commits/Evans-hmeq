@@ -1,0 +1,14 @@
+/*
+Copy this file before editing. Replace every at-sign template token and add the
+exact business filters needed for the requested total. Do not run the template
+unchanged.
+*/
+
+EVALUATE
+ROW(
+    "ControlTotal",
+    CALCULATE(
+        SUM('@@FACT_TABLE@@'[@@AMOUNT_COLUMN@@])
+        /* Add reviewed filters here. */
+    )
+)

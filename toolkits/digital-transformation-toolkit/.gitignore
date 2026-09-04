@@ -1,0 +1,30 @@
+# Local configuration and credentials
+.env
+.env.*
+!templates/.env.example
+*.token
+*.secrets.json
+tokens.json
+token_cache.json
+
+# Power BI files and generated evidence
+*.pbix
+*.pbit
+evidence/
+tmp/
+*.csv
+*.jsonl
+*.log
+
+# Local tooling
+.venv/
+__pycache__/
+*.pyc
+.databrickscfg
+
+# Editors and operating systems
+.vs/
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
